@@ -35,7 +35,7 @@ def chkcard(uid):
 
     today=str(datetime.now().strftime('%Y-%m-%d'))
     time=str(datetime.now().strftime('%H:%M:%S'))
-
+    #10:15:08 (HH:MM:SS)
     if int(time[3:5])>=30:
         range_id=str(time[0:2])+':30'
         print('系統時段=',range_id)
@@ -43,13 +43,24 @@ def chkcard(uid):
         range_id=str(time[0:2])+':00'
         print('系統時段=',range_id)
 
-    c.execute('select * from cards where card_uuid=?' ,(uid,))
+    c.execute('select * from cards where card_uuid=?' ,(uid,)) #找尋資料庫中, 是否有合法之卡號
     i=0
-    for row in c: #判斷是否在CARDS內 如果沒有直接跳出
+    for row in c: #資料庫筆數如果為0則表示無此卡號
         i+=1
     if i>=1:
         print("合法卡號")
         print('customers_id是'+row[1])
+        c.execute('select * from spcards where customer_id=?' ,(row[1],))
+        i=0
+        for row in c:
+            print("全區卡")
+            i+=1
+            if i>=1:
+                relay.action(1,5,0)
+                if row[2]==3:
+                    relay.action(3,255,0)
+                break
+
         c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
         i=0
         for row in c: #先掃看是否有筆數, 如果沒有直接跳出(會掃到多筆)
