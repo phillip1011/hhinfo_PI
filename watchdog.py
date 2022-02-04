@@ -20,7 +20,7 @@ def getmac():
 def getlocalip():
     # serverip= "35.221.198.141"  #hhremote.com主機
     #serverip =  "127.0.0.1"
-    serverip =  "127.0.0.22"
+    serverip =  "127.0.0.22ssss"
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         s.connect((serverip, 80))
