@@ -31,6 +31,7 @@ conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
 dev_c=conn.cursor()
 dev_c.execute('select * from device')
 for row1 in dev_c:
+    doortype=row1[10]
     controlip=row1[1].split(':',1)
     localport=controlip[1]
     controlip=controlip[0]
@@ -43,7 +44,9 @@ conn.close()
 
 
 def ar721_callback(uid):
-    chkcard.chkcard(uid,"AR721")
+    print('doortype=',doortype)
+    uid =str(uid).zfill(10)
+    chkcard.chkcard(uid,"AR721",sname,baurate,doortype)
     sxstatus = relay.read_sensor()
     rxstatus = relay.relaystatus
     remote.scode(controlip,rxstatus,sxstatus)
@@ -53,7 +56,7 @@ def r35c_callback(uid):
     #print ("revice nfc call back uid : ", uid)
     if uid != '' :
         uid =str(uid).zfill(10)
-        chkcard.chkcard(uid,"R35C")
+        chkcard.chkcard(uid,"R35C",sname,baurate,doortype)
         sxstatus = relay.read_sensor()
         rxstatus = relay.relaystatus        
         remote.scode(controlip,rxstatus,sxstatus)

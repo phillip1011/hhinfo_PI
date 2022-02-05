@@ -493,24 +493,24 @@ import serial
 
 
 #ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
-ser = serial.Serial('/dev/ttyS0', 9600, timeout=1)
+ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
 # if(ser.isOpen() == True):
 #     ser.close()
 
 #input=b'\x7e\x05\x01\x21\x82\x5d\x01'  #door relay on
-#input=b'\x7e\x05\x01\x21\x83\x5c\x01'  #door relay off
+input=b'\x7e\x05\x01\x21\x83\x5c\x01'  #door relay off
 #input=b'\x7e\x05\x01\x21\x85\x5a\x01'  #alarm relay on
 #input=b'\x7e\x05\x01\x21\x86\x59\x01'  #alarm relay off
 #input=b'\x7e\x0e\x01\x83\x00\x01\x04\x41\xea\x4b\x04\xd2\x02\x01\x4d\x25'   #setting access PIN
-while True:
-    input=b'\x7e\x04\x01\x25\xdb\x01'
-    ser.write(input)
-    sleep(0.2)
-    ser.close
-    output = ser.read(64)
-    print(output)
-    print(hex(output[0]))
-    print(hex(output[1]))
-    print(hex(output[2]))
-    print(hex(output[3]))
-    print(hex(output[4]))
+#while True:
+#input=b'\x7e\x04\x01\x25\xdb\x01'
+ser.write(input)
+sleep(0.2)
+ser.close
+output = ser.read(64)
+print(output)
+print(hex(output[0]))
+print(hex(output[1]))
+print(hex(output[2]))
+print(hex(output[3]))
+print(hex(output[4]))

@@ -2,11 +2,23 @@ import sqlite3
 from datetime import datetime
 import models.relay as relay
 import WebApiClent.remote as remote
+from time import sleep
+import serial
 
-def chkcard(uid,door_dev):
+
+def chkcard(uid,door_dev,sname,baurate,doortype):
+    ser = serial.Serial(sname, baurate, timeout=1)
+    AR721R1ON=b'\x7e\x05\x01\x21\x82\x5d\x01'   #door relay on
+    AR721R1OFF=b'\x7e\x05\x01\x21\x83\x5c\x01'  #door relay off
+    AR721R2ON=b'\x7e\x05\x01\x21\x85\x5a\x01'   #alarm relay on
+    AR721R2OFF=b'\x7e\x05\x01\x21\x86\x59\x01'  #alarm relay off
+    if doortype=='一般':   #設定一般門和鐵卷門開啟時間
+        dooropentime=5
+    else:
+        dooropentime=2
     #relay.setup()
     #開啟資料庫連線
-    print('chkcard door_dev=',door_dev)
+    # print('door_dev=',door_dev)
     conn=sqlite3.connect("cardno.db")
     c=conn.cursor()
     c2=conn.cursor()
@@ -49,7 +61,12 @@ def chkcard(uid,door_dev):
                 spauth=row2[1]
                 if sensor0==1:  #S0=1 表示門狀態是關閉
                     process="全區卡-開門"
-                    relay.action(1,5,0)
+                    if door_dev=="AR721":
+                        ser.write(AR721R1ON)
+                        sleep(dooropentime)
+                        ser.write(AR721R1OFF)
+                    else:
+                        relay.action(1,dooropentime,0)
                     spauth=row2[2]
                     # print(spauth)
                     if spauth=="":
@@ -64,38 +81,100 @@ def chkcard(uid,door_dev):
                     elif spauth[0]==str(4):
                         print("開AC")
                         relay.action(4,255,0)
-                else:
-                    process="全區卡-關門"
-                    relay.action(2,5,0)
-                    relay.action(3,0,0)
-                    relay.action(4,0,0)
+                else:   #門狀態是開啟
+                    if doortype=='鐵卷門':
+                        process="全區卡-關門"
+                        if door_dev=="AR721":
+                            ser.write(AR721R2ON)
+                            sleep(dooropentime)
+                            ser.write(AR721R2OFF)
+                        else:
+                            relay.action(2,dooropentime,0)
+                        relay.action(3,0,0)
+                        relay.action(4,0,0)
                 break
         if process=="":
-            print('chkpoint')
+            print('一般卡')
             process="非預約時段"
-            c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
-            i=0
-            for row in c: #找尋booking_customers資料庫中, 是否有此客戶
-                i+=1
-                print('booking_id:第'+str(i)+'筆'+row[1])
-                if i>=1:
-                    # print("test")
-                    # print(row[1])
-                    # print(today)
-                    # print(range_id)
-                    c1.execute('select * from booking_histories where id=? and date=? and range_id=?' ,(row[1],today,range_id,))
-                    xx=0
-                    for row1 in c1: #找尋booking_histories資料庫中, 是否有此客戶的預約
-                        print(row1[0])
-                        xx+=1
-                        if xx>=1:
-                            process="租借時段-開門"
-                            relay.action(1,5,0)
-                            relay.action(3,255,0)
-                            if row1[4] == '1':
-                                relay.action(4,255,0)
+            if doortype=='一般':   #一般租借-一般門
+                c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
+                i=0
+                for row in c: #找尋booking_customers資料庫中, 是否有此客戶
+                    i+=1
+                    print('booking_id:第'+str(i)+'筆'+row[1])
+                    if i>=1:
+                        # print("test")
+                        # print(row[1])
+                        # print(today)
+                        # print(range_id)
+                        c1.execute('select * from booking_histories where id=? and date=? and range_id=?' ,(row[1],today,range_id,))
+                        xx=0
+                        for row1 in c1: #找尋booking_histories資料庫中, 是否有此客戶的預約
+                            print(row1[0])
+                            xx+=1
+                            if xx>=1:
+                                process="租借時段-開門"
+                                if door_dev=="AR721":
+                                    ser.write(AR721R1ON)
+                                    sleep(dooropentime)
+                                    ser.write(AR721R1OFF)
+                                else:
+                                    relay.action(1,dooropentime,0)
+                                
+                                relay.action(3,255,0)
+                                if row1[4] == '1':
+                                    relay.action(4,255,0)
+                                else:
+                                    relay.action(4,0,0)
+
+            else:   #一般租借-鐵卷門
+                if sensor0==1:  #S0=1 表示門狀態是關閉
+                    c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
+                    i=0
+                    for row in c: #找尋booking_customers資料庫中, 是否有此客戶
+                        i+=1
+                        print('booking_id:第'+str(i)+'筆'+row[1])
+                        if i>=1:
+                            # print("test")
+                            # print(row[1])
+                            # print(today)
+                            # print(range_id)
+                            c1.execute('select * from booking_histories where id=? and date=? and range_id=?' ,(row[1],today,range_id,))
+                            xx=0
+                            for row1 in c1: #找尋booking_histories資料庫中, 是否有此客戶的預約
+                                print(row1[0])
+                                xx+=1
+                                if xx>=1:
+                                    process="租借時段-開門"
+                                    if door_dev=="AR721":
+                                        ser.write(AR721R1ON)
+                                        sleep(dooropentime)
+                                        ser.write(AR721R1OFF)
+                                    else:
+                                        relay.action(1,dooropentime,0)
+                                    
+                                    relay.action(3,255,0)
+                                    if row1[4] == '1':
+                                        relay.action(4,255,0)
+                                    else:
+                                        relay.action(4,0,0)
+                else:  #S0=0 表示門狀態是開啟
+                    c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
+                    i=0
+                    for row in c: #找尋booking_customers資料庫中, 是否有此客戶
+                        i+=1
+                        print('booking_id:第'+str(i)+'筆'+row[1])
+                        if i>=1:
+                            if door_dev=="AR721":
+                                ser.write(AR721R2ON)
+                                sleep(dooropentime)
+                                ser.write(AR721R2OFF)
                             else:
-                                relay.action(4,0,0)
+                                relay.action(2,dooropentime,0)
+                            relay.action(3,0,0)
+                            relay.action(4,0,0)                            
+
+
     else:
         auth="非法卡"
         process="禁止進入"
@@ -104,9 +183,10 @@ def chkcard(uid,door_dev):
     c.execute("INSERT INTO scanlog VALUES(?,?,?,0,?,?)", (uid,today,time,auth,process,))
     conn.commit()
     conn.close()
+    ser.close
 
 if __name__=='__main__':
     uid='4077189990'
     #uid='1234567890'
     door_dev="AR721"
-    chkcard(uid,door_dev)
+    chkcard(uid,door_dev,sname,baurate)

@@ -84,7 +84,7 @@ def scode(clientip,rxstatus,sxstatus):
 
     #request_string += "status=" +str(status)
     try:
-        print(api_url_base + "?" + request_string)
+        #print(api_url_base + "?" + request_string)
         response = requests.get(api_url_base, params=request_string, headers=headers, verify=False,timeout=5)
         if (response.status_code == 200):
             print("scode send status")

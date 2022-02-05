@@ -18,7 +18,7 @@ def do_read_ar721(sname,baurate):
         ser.write(input)
         sleep(0.2)
         output = ser.read(64)
-        # print(output)
+        print(output)
         # for data in output:
         #     print(hex(data))
         # print(hex(output[0]))
@@ -29,8 +29,8 @@ def do_read_ar721(sname,baurate):
         if output==b'':
             print("門口機連線異常")
         else:
-            if len(output)>=26:
-                if output[3]==0x3:
+            if len(output)>=30:
+                if output[3]==0x3 and output[1]==0x1d:
                     UID =  bytearray(b'\x00\x00\x00\x00')
                     UID[0] = output[19]
                     UID[1] = output[20]
@@ -44,7 +44,7 @@ def do_read_ar721(sname,baurate):
                     ar721_callback(uid)
                 else :
                     ser.write(b'\x7e\x04\x01\x37\xc9\x01')
-                    sleep(1)
+                    sleep(0.2)
         
 
 if __name__=='__main__':
