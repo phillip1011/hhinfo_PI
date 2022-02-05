@@ -22,14 +22,33 @@ serverip ="35.221.198.141"
 serverport= 80
 VPNserverip="10.8.0.1"
 checkip="114.35.246.11"
-controlip = "10.8.1.151"
-localport = 4661 
+# controlip = "10.8.1.151"
+# localport = 4661 
 rxstatus = [0, 0, 0, 0]
 sxstatus = [0, 0, 0, 0, 0, 0]
 GPIO.setwarnings(False)
 
+conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+dev_c=conn.cursor()
+dev_c.execute('select * from device')
+for row1 in dev_c:
+    controlip=row1[1].split(':',1)
+    localport=controlip[1]
+    controlip=controlip[0]
+# print('localport=',localport)
+# print('controlip=',controlip)
+conn.commit()
+conn.close()
+
+
+
+
 def ar721_callback(uid):
     chkcard.chkcard(uid)
+    sxstatus = relay.read_sensor()
+    rxstatus = relay.relaystatus
+    remote.scode(controlip,rxstatus,sxstatus)
+
 
 def r35c_callback(uid):
     #print ("revice nfc call back uid : ", uid)
@@ -39,14 +58,6 @@ def r35c_callback(uid):
         uid =str(uid).zfill(10)
         rc = remote.dcode(token,uid, controlip, 1, rxstatus, sxstatus)
         print ("return",rc)
-        conn=sqlite3.connect("cardno.db")
-        c=conn.cursor()
-        c.execute('CREATE TABLE IF NOT EXISTS scanlog(cardnbr TEXT,date TEXT,time TEXT,rtnflag TEXT)')
-        today=str(datetime.now().strftime('%Y%m%d'))
-        time=str(datetime.now().strftime('%H%M%S')).zfill(6)
-        c.execute("INSERT INTO scanlog VALUES(?,?,?,0)", (uid,today,time,))
-        conn.commit()
-        conn.close()
 
         if len(rc) > 10:
             print("線上開門")
@@ -55,8 +66,7 @@ def r35c_callback(uid):
             remote.operdo(token,controlip,0)
         else:
             print("離線開門")
-            #offline.checkdoor(uid)  #VIPCards
-            chkcard.chkcard(uid)            #一般卡
+            chkcard.chkcard(uid)
     else:
         print("read nfc error")
 
@@ -76,7 +86,8 @@ if __name__=='__main__':
     ser.write(input)
     sleep(0.2)
     output=ser.read(64)
-    if output!=b'':
+
+    if output[0]==0x7e:
         print("AR721 Start")
         t = threading.Thread(target=ar721.do_read_ar721, args=(sname,baurate))
         t.setDaemon(True)
