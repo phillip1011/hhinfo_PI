@@ -11,7 +11,7 @@ import WebApiClent.remote as remote
 import models.r35c as r35c
 import models.ar721 as ar721
 import chkcard as chkcard
-
+GPIO.setwarnings(False)
 global uid
 
 sname='/dev/ttyUSB0'
@@ -26,7 +26,7 @@ checkip="114.35.246.11"
 # localport = 4661 
 rxstatus = [0, 0, 0, 0]
 sxstatus = [0, 0, 0, 0, 0, 0]
-GPIO.setwarnings(False)
+door_dev=""
 
 conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
 dev_c=conn.cursor()
@@ -53,20 +53,22 @@ def ar721_callback(uid):
 def r35c_callback(uid):
     #print ("revice nfc call back uid : ", uid)
     if uid != '' :
-        sxstatus = relay.read_sensor()
-        rxstatus = relay.relaystatus
         uid =str(uid).zfill(10)
-        rc = remote.dcode(token,uid, controlip, 1, rxstatus, sxstatus)
-        print ("return",rc)
+        chkcard.chkcard(uid)
+        sxstatus = relay.read_sensor()
+        rxstatus = relay.relaystatus        
+        remote.scode(controlip,rxstatus,sxstatus)
+        # rc = remote.dcode(token,uid, controlip, 1, rxstatus, sxstatus)
+        # print ("return",rc)
 
-        if len(rc) > 10:
-            print("線上開門")
-            rc = rc[1:]
-            act = relay.command(rc)  #切字完,做RY動作action()
-            remote.operdo(token,controlip,0)
-        else:
-            print("離線開門")
-            chkcard.chkcard(uid)
+        # if len(rc) > 10:
+        #     print("線上開門")
+        #     rc = rc[1:]
+        #     act = relay.command(rc)  #切字完,做RY動作action()
+        #     remote.operdo(token,controlip,0)
+        # else:
+        #     print("離線開門")
+        #     chkcard.chkcard(uid)
     else:
         print("read nfc error")
 
@@ -86,14 +88,16 @@ if __name__=='__main__':
     ser.write(input)
     sleep(0.2)
     output=ser.read(64)
-
-    if output[0]==0x7e:
+    
+    if output!=b'':
         print("AR721 Start")
+        door_dev="AR721"
         t = threading.Thread(target=ar721.do_read_ar721, args=(sname,baurate))
         t.setDaemon(True)
         t.start()
     else:
         print("R35C Start")
+        door_dev="R35C"
         block=1
         t = threading.Thread(target=r35c.do_read_r35c, args=(block,r35c_callback))
         t.setDaemon(True)

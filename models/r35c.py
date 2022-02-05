@@ -54,7 +54,7 @@ def getdata():
 
 def get_event():
     output = getdata()
-    print(output)
+    #print(output)
     try:
         uid = decode(output)
         print( uid)
@@ -76,7 +76,7 @@ def do_read_r35c(no,r35c_callback = None):
     while True:
         uid = get_event()
         if uid != '' :
-            print(uid)
+            #print(uid)
             if (r35c_callback != None):
                 #print(datestring,uid)
                 #uid = int(uid)

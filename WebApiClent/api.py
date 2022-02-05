@@ -347,7 +347,7 @@ def apispcards():
         c=conn.cursor()
 
         c.execute('CREATE TABLE IF NOT EXISTS spcards(id TEXT,customer_id TEXT,authority TEXT)')
-        #c.execute('DELETE FROM spcards')
+        c.execute('DELETE FROM spcards')
         for value in revice_data:
             c.execute("INSERT INTO spcards values (?,?,?)", (value["id"],value["customer_id"],value["authority"],))
         conn.commit()
@@ -368,8 +368,9 @@ def apiDeviceDate():
         c=conn.cursor()
         c.execute('CREATE TABLE IF NOT EXISTS device(id TEXT,ip TEXT,local_ip TEXT,ip_mode TEXT,family TEXT,name TEXT,description TEXT,group_id TEXT,mode TEXT,style TEXT,type TEXT,is_booking TEXT,status TEXT,kernel TEXT)')
         c.execute('DELETE FROM device')
-        value = revice_data
-        c.execute("INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (value["id"],value["ip"],value["local_ip"],value["ip_mode"],value["family"],value["name"],value["description"],value["group_id"],value["mode"],value["style"],value["type"],value["is_booking"],value["status"],value["kernel"],))
+        # value = revice_data
+        for value in revice_data:
+            c.execute("INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (value["id"],value["ip"],value["local_ip"],value["ip_mode"],value["family"],value["name"],value["description"],value["group_id"],value["mode"],value["style"],value["type"],value["is_booking"],value["status"],value["kernel"],))
         conn.commit()
         conn.close()
         status_code = flask.Response(status=203)

@@ -18,7 +18,7 @@ def do_read_ar721(sname,baurate):
         ser.write(input)
         sleep(0.2)
         output = ser.read(64)
-        print(output)
+        # print(output)
         # for data in output:
         #     print(hex(data))
         # print(hex(output[0]))
