@@ -26,7 +26,6 @@ checkip="114.35.246.11"
 # localport = 4661 
 rxstatus = [0, 0, 0, 0]
 sxstatus = [0, 0, 0, 0, 0, 0]
-door_dev=""
 
 conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
 dev_c=conn.cursor()
@@ -44,7 +43,7 @@ conn.close()
 
 
 def ar721_callback(uid):
-    chkcard.chkcard(uid)
+    chkcard.chkcard(uid,"AR721")
     sxstatus = relay.read_sensor()
     rxstatus = relay.relaystatus
     remote.scode(controlip,rxstatus,sxstatus)
@@ -54,7 +53,7 @@ def r35c_callback(uid):
     #print ("revice nfc call back uid : ", uid)
     if uid != '' :
         uid =str(uid).zfill(10)
-        chkcard.chkcard(uid)
+        chkcard.chkcard(uid,"R35C")
         sxstatus = relay.read_sensor()
         rxstatus = relay.relaystatus        
         remote.scode(controlip,rxstatus,sxstatus)
@@ -91,14 +90,11 @@ if __name__=='__main__':
     
     if output!=b'':
         print("AR721 Start")
-        door_dev="AR721"
         t = threading.Thread(target=ar721.do_read_ar721, args=(sname,baurate))
         t.setDaemon(True)
         t.start()
     else:
         print("R35C Start")
-        door_dev="R35C"
-        block=1
         t = threading.Thread(target=r35c.do_read_r35c, args=(block,r35c_callback))
         t.setDaemon(True)
         t.start()  

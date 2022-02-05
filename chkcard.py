@@ -3,10 +3,10 @@ from datetime import datetime
 import models.relay as relay
 import WebApiClent.remote as remote
 
-def chkcard(uid):
+def chkcard(uid,door_dev):
     #relay.setup()
     #開啟資料庫連線
-
+    print('chkcard door_dev=',door_dev)
     conn=sqlite3.connect("cardno.db")
     c=conn.cursor()
     c2=conn.cursor()
@@ -108,4 +108,5 @@ def chkcard(uid):
 if __name__=='__main__':
     uid='4077189990'
     #uid='1234567890'
-    chkcard(uid)
+    door_dev="AR721"
+    chkcard(uid,door_dev)
