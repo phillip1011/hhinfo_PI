@@ -9,6 +9,9 @@ serverip = "10.8.0.1"
 port = 80
 localport =4661
 def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
+    serverip='114.35.246.115'
+    port = 8080
+
     headers = {'Content-Type': 'application/json'}
     api_url_base = "http://" + serverip + ":" + str(port) +"/api/v1/remote/dcode"
     request_string = "token=" + token + "&"
@@ -16,13 +19,18 @@ def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
     request_string += "controlip=" + str(clientip) +":" + str(localport) + "&"
     request_string += "gateno=" +str(gateno) + "&"
     request_string += "eventtime=" + time.strftime("%Y%m%d%H%M%S", time.localtime())
-    print(request_string)
+    # print(request_string)
     for i in range(4):
         request_string += "&r" + str(i+1) + "status=" + str(rxstatus[i])
     for i in range(6):
         request_string += "&s" + str(i+1) + "status=" + str(sxstatus[i])
-    print(api_url_base + "?" + request_string)
+    # print(api_url_base + "?" + request_string)
+    if scannername=='AR721':
+        request_string += "&"+"scannername="+str(scannername)
+        for node in range(1,ar721cnt+1):
+            request_string += "&"+"scannernode" + str(node)+"=" + str(node)
 
+    # print(request_string)
     try:
         response = requests.get(api_url_base, params=request_string, headers=headers, verify=False,timeout=5)
         print('伺服器回傳狀態:'+str(response.status_code))
@@ -46,7 +54,8 @@ def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
 
 def report(clientip,txcode,token):
     while True:
-        time.sleep(60*3)
+        time.sleep(15)
+        #time.sleep(60*3)
         #token = "aGhpbmZvOjIwMjAwMTE2MjIxMDM5"
         rxstatus = relay.relaystatus 
         sxstatus = relay.read_sensor()
@@ -110,9 +119,9 @@ def monitor_sensor(clientip,token):
             scode(clientip,rxstatus,sxstatus)
 
         #rxstatus = relay.relaystatus
-        xx= relay.read_hand()
-        #print(xx,rxstatus)
-        if (xx[0] == 0):
-            #if rxstatus[0] == 0:
-            relay.do_action(1,4,0)
+        # xx= relay.read_hand()
+        # #print(xx,rxstatus)
+        # if (xx[0] == 0):
+        #     #if rxstatus[0] == 0:
+        #     relay.do_action(1,4,0)
 

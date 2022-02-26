@@ -5,9 +5,9 @@ from datetime import datetime
 from time import sleep
 
 def get_ovpn_file(sHostName,vpnfile):
-    with pysftp.Connection(host=sHostName , username='ovpn', private_key="/home/ubuntu/nfc/id_rsa") as sftp:
+    with pysftp.Connection(host=sHostName , username='ovpn', private_key="/home/ubuntu/hhinfo_PI/id_rsa") as sftp:
         # 檔案下載 sftp.get('遠端檔案位置', '本機檔案位置')
-        sftp.get(vpnfile ,"/home/ubuntu/nfc/" + vpnfile)
+        sftp.get(vpnfile ,"/home/ubuntu/hhinfo_PI/" + vpnfile)
 
 
 def pingServer(serverip):
@@ -24,7 +24,7 @@ def pingVPNServer(VPNserverip):
     else:
         return response_s
 
-def main(serverip,VPNserverip):
+def main(serverip,VPNserverip,netstatus):
     # print(serverip)
     # print(VPNserverip)
     while True:
@@ -50,7 +50,7 @@ def main(serverip,VPNserverip):
                     wlog("下載VPN登入檔案,完成! , 準備登錄VPN Server","a+")
                 os.system("sudo killall openvpn")
                 sleep(1)
-                os.system("sudo -b openvpn --config /home/ubuntu/nfc/" +vpnfile)
+                os.system("sudo -b openvpn --config /home/ubuntu/hhinfo_PI/" +vpnfile)
                 sleep(10)
                 if pingVPNServer(VPNserverip) ==0:
                     wlog("登入VPN成功","a+")
@@ -61,17 +61,21 @@ def main(serverip,VPNserverip):
             os.system("sudo killall openvpn") #防止不正常斷線, VPN卡Threading
             #wlog("PING "+serverip+" WEB主機回應失敗----結束","a+")
             print("PING "+serverip+" WEB主機回應失敗----結束")
-        sleep(60*1)
+        if netstatus==1:
+            sleep(60*1)
+        else:
+            return
     
 def wlog(msg,fnc):
     #將結果寫到start_log.txt
     timenow =str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    text_file = open("/home/ubuntu/nfc/start_log.txt", fnc)
+    text_file = open("/home/ubuntu/hhinfo_PI/start_log.txt", fnc)
     text_file.write(timenow+" "+msg+'\n')
     text_file.close()
 
 if __name__=='__main__':
     serverip= "35.221.198.141"
     VPNserverip = "10.8.0.1"    
+    netstatus=1
     #sleep(1)
-    main(serverip,VPNserverip)
+    main(serverip,VPNserverip,netstatus)

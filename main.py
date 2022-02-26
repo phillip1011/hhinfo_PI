@@ -4,7 +4,7 @@ import serial
 import sqlite3
 from datetime import datetime
 from time import sleep
-import login_internet as login_internet
+import WebApiClent.login_internet as login_internet
 import models.relay as relay
 import WebApiClent.api as api
 import WebApiClent.remote as remote
@@ -41,12 +41,10 @@ conn.commit()
 conn.close()
 
 
-
-
-def ar721_callback(uid):
+def ar721_callback(uid,node):
     print('doortype=',doortype)
     uid =str(uid).zfill(10)
-    chkcard.chkcard(uid,"AR721",sname,baurate,doortype)
+    chkcard.chkcard(uid,"AR721",sname,baurate,doortype,node)
     sxstatus = relay.read_sensor()
     rxstatus = relay.relaystatus
     remote.scode(controlip,rxstatus,sxstatus)
@@ -81,31 +79,43 @@ if __name__=='__main__':
     relay.start_relay()
     
     #loop for checking internet every 1 min
-    t2 = threading.Thread(target=login_internet.main, args=(serverip, VPNserverip))
-    t2.start()
+    # netstatus=1   # 0表示boot時, 1表示每X分鐘檢查
+    # t2 = threading.Thread(target=login_internet.main, args=(serverip, VPNserverip,netstatus))
+    # t2.start()
 
     #loop for card number every 1 sec
     ser = serial.Serial(sname, baurate, timeout=1)
-    input=b'\x7e\x04\x01\x25\xdb\x01'
-    ser.write(input)
-    sleep(0.2)
-    output=ser.read(64)
-    
-    if output!=b'':
-        print("AR721 Start")
-        t = threading.Thread(target=ar721.do_read_ar721, args=(sname,baurate))
+    #input=b'\x7e\x04\x01\x25\xdb\x01'
+    ar721cnt=0
+    for node in range(1,5):
+        ar721.scode(sname,baurate,node,'0x25')
+        output=ser.read(64)
+        try:
+            hex(output[0])=='0x7e'
+            ar721cnt +=1
+            print("check AR721 node=",node,"sucess")
+        except:
+            print("check AR721 node=",node,"fail")
+    if ar721cnt>0:
+        controlname="AR721"
+        print(controlname," Start")
+        t = threading.Thread(target=ar721.do_read_ar721, args=(sname,baurate,ar721cnt))
         t.setDaemon(True)
         t.start()
     else:
-        print("R35C Start")
+        controlname="R35C"
+        print(controlname," Start")
+        block=1
         t = threading.Thread(target=r35c.do_read_r35c, args=(block,r35c_callback))
         t.setDaemon(True)
-        t.start()  
+        t.start()
 
     #loop for report every 3 min
     remote.serverip = serverip
     remote.port = serverport
     remote.localport =localport
+    remote.scannername=controlname
+    remote.ar721cnt=ar721cnt
     t3 = threading.Thread(target=remote.report, args=(controlip, "9999099990",token))
     t3.setDaemon(True)
     t3.start()
@@ -120,6 +130,11 @@ if __name__=='__main__':
     api.controlip = controlip
     api.port = 4661
     api.token_key=token_key
+    api.sname=sname
+    api.baurate=baurate
+    api.controlname=controlname
+    if ar721cnt>0:
+        api.ar721cnt=ar721cnt
     api.run()
 #20220101 完成刷卡程式(do_read_r35c)及sensor4開門程式(sx_chk)並加入threading
 #20220102 完成網路及VPN連線測試程式(login_internet.py)

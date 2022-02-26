@@ -8,7 +8,11 @@ import sqlite3
 import threading
 import models.relay as relay
 import WebApiClent.update_time as update_time
-
+import models.ar721 as ar721
+from datetime import datetime
+from time import sleep
+import serial
+import struct
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
@@ -256,6 +260,33 @@ def api02():
         update_time.update()
         #update_time.update2(revice_data)
         status_code = flask.Response(status=203)
+        if controlname=="AR721":
+            ser = serial.Serial(sname, baurate, timeout=1)
+            sysyy=int(datetime.now().strftime('%y'))
+            sysmm=int(datetime.now().strftime('%m'))
+            sysdd=int(datetime.now().strftime('%d'))
+            syshh=int(datetime.now().strftime('%H'))
+            sysmin=int(datetime.now().strftime('%M'))
+            sysss=int(datetime.now().strftime('%S'))
+            sysww=int(datetime.now().strftime('%w'))
+            if sysww==0:
+                sysww=7
+            print("PI系統時間=",sysyy,'-',sysmm,'-',sysdd,' ',syshh,':',sysmin,':',sysss)
+            for node in range(1,ar721cnt+1):
+                xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy
+                sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
+                sum =sum % 256
+                # print(sysyy,sysmm,sysdd)
+                # print(sysww)
+                # print(syshh,sysmin,sysss)
+                # print('xor=',hex(xor))
+                # print('sum=',hex(sum))
+                input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
+                # print(input)
+                ser.write(input)
+                sleep(0.2)
+                print(controlname,"node=",node, "校時完成")
+
         return status_code
 
     elif request.method == 'GET':
@@ -273,6 +304,8 @@ def api02():
             mimetype='application/json'
         )
         return response
+    
+
 
 
 @app.route('/api/v3/remote/syns/cards', methods=['POST'])
@@ -368,9 +401,26 @@ def apiDeviceDate():
         c=conn.cursor()
         c.execute('CREATE TABLE IF NOT EXISTS device(id TEXT,ip TEXT,local_ip TEXT,ip_mode TEXT,family TEXT,name TEXT,description TEXT,group_id TEXT,mode TEXT,style TEXT,type TEXT,is_booking TEXT,status TEXT,kernel TEXT)')
         c.execute('DELETE FROM device')
-        # value = revice_data
-        for value in revice_data:
-            c.execute("INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (value["id"],value["ip"],value["local_ip"],value["ip_mode"],value["family"],value["name"],value["description"],value["group_id"],value["mode"],value["style"],value["type"],value["is_booking"],value["status"],value["kernel"],))
+        value = revice_data
+        c.execute(
+            "INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                value["id"],
+                value["ip"],
+                value["local_ip"],
+                value["ip_mode"],
+                value["family"],
+                value["name"],
+                value["description"],
+                value["group_id"],
+                value["mode"],
+                value["style"],
+                value["type"],
+                value["is_booking"],
+                value["status"],
+                value["kernel"]
+            )
+        )
         conn.commit()
         conn.close()
         status_code = flask.Response(status=203)
@@ -379,6 +429,66 @@ def apiDeviceDate():
         status_code = flask.Response(status=401)
         return status_code
 
+@app.route('/api/v3/remote/syns/openword', methods=['POST'])
+def apiopenword():
+    #開門密碼
+    token_base64 = request.headers.get('token')
+    token = base64.b64decode(token_base64 + "=")
+    if token == token_key:
+        revice_data = json.loads(request.data)
+        #要加型態判斷
 
+        node=revice_data['node']
+        func='0x83'
+        addr='00001'
+        site='01089'
+        card='59979'
+        PIN=revice_data['pwd']
+        
+        addrH=struct.pack(">H",int(addr))
+        addrH=addrH[0]
+        addrL=struct.pack(">H",int(addr))
+        addrL=addrL[1]
+        siteH=struct.pack(">H",int(site))
+        siteH=siteH[0]
+        siteL=struct.pack(">H",int(site))
+        siteL=siteL[1]
+        cardH=struct.pack(">H",int(card))
+        cardH=cardH[0]
+        cardL=struct.pack(">H",int(card))
+        cardL=cardL[1]
+        pinH=struct.pack(">H",int(PIN))
+        pinH=pinH[0]
+        pinL=struct.pack(">H",int(PIN))
+        pinL=pinL[1]
+
+        #xor=0xff^node^int(func,16)^0x00^0x1^0x4^0x41^0xea^0x4b^0x4^0xd2^0x2^0x1
+        xor=0xff ^ int(node,16) ^ int(func,16) ^ addrH ^ addrL ^ siteH ^ siteL ^ cardH ^ cardL ^ pinH ^ pinL ^ 0x2 ^ 0x1
+        sum=int(node,16) + int(func,16) + addrH + addrL + siteH + siteL + cardH + cardL + pinH + pinL + 0x2 + 0x1 + xor
+        sum =sum % 256
+        # print('xor=',hex(xor))
+        # print('sum=',hex(sum))
+        comm=(
+            b'\x7e\x0e'+ 
+            bytes([int(node,16)])+ 
+            bytes([int(func,16)])+ 
+            bytes([addrH])+
+            bytes([addrL])+
+            bytes([siteH])+
+            bytes([siteL])+
+            bytes([cardH])+
+            bytes([cardL])+
+            bytes([pinH])+
+            bytes([pinL])+
+            b'\x02\x01' + 
+            bytes([xor])+ 
+            bytes([sum])
+        )
+        ser = serial.Serial(sname, baurate, timeout=1)
+        ser.write(comm)
+        sleep(0.2)
+
+    status_code = flask.Response(status=203)
+    return status_code
 def run():
     app.run(debug=False, use_reloader=False, threaded=False, host="0.0.0.0", port=port)

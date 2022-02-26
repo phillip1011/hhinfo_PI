@@ -486,31 +486,173 @@
 # print("月:"+str(data[10]))
 # print("日:"+str(data[9]))
 # ser.close()
-#from dataclasses import dataclass
-from time import sleep
-import serial
+# #from dataclasses import dataclass
+# from time import sleep
+# import serial
 
 
 
-#ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
-ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
-# if(ser.isOpen() == True):
-#     ser.close()
+# #ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+# ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+# # if(ser.isOpen() == True):
+# #     ser.close()
 
-#input=b'\x7e\x05\x01\x21\x82\x5d\x01'  #door relay on
-input=b'\x7e\x05\x01\x21\x83\x5c\x01'  #door relay off
-#input=b'\x7e\x05\x01\x21\x85\x5a\x01'  #alarm relay on
-#input=b'\x7e\x05\x01\x21\x86\x59\x01'  #alarm relay off
-#input=b'\x7e\x0e\x01\x83\x00\x01\x04\x41\xea\x4b\x04\xd2\x02\x01\x4d\x25'   #setting access PIN
-#while True:
-#input=b'\x7e\x04\x01\x25\xdb\x01'
-ser.write(input)
-sleep(0.2)
-ser.close
-output = ser.read(64)
-print(output)
-print(hex(output[0]))
-print(hex(output[1]))
-print(hex(output[2]))
-print(hex(output[3]))
-print(hex(output[4]))
+# #input=b'\x7e\x05\x01\x21\x82\x5d\x01'  #door relay on
+# input=b'\x7e\x05\x01\x21\x83\x5c\x01'  #door relay off
+# #input=b'\x7e\x05\x01\x21\x85\x5a\x01'  #alarm relay on
+# #input=b'\x7e\x05\x01\x21\x86\x59\x01'  #alarm relay off
+# #input=b'\x7e\x0e\x01\x83\x00\x01\x04\x41\xea\x4b\x04\xd2\x02\x01\x4d\x25'   #setting access PIN
+# #while True:
+# #input=b'\x7e\x04\x01\x25\xdb\x01'
+# ser.write(input)
+# sleep(0.2)
+# ser.close
+# output = ser.read(64)
+# print(output)
+# print(hex(output[0]))
+# print(hex(output[1]))
+# print(hex(output[2]))
+# print(hex(output[3]))
+# print(hex(output[4]))
+
+import os
+import json
+import requests
+import datetime
+import WebApiClent.update_time as update_time
+import sqlite3
+
+serverip = "114.35.246.115"
+port = 8080
+
+def test():
+    path = '/api/v1/data/time'
+    headers = {'Content-Type': 'application/json'}
+    api_url_base = "http://" + serverip + ":" + str(port) + path
+    
+    
+    # response = requests.get(api_url_base,'', headers=headers, verify=False,timeout=5)
+   
+    # print('伺服器回傳狀態:', response)
+    # # Making a get request 
+    response = requests.get(api_url_base) 
+    
+    # print response 
+    print(response) 
+    
+    # print json content
+    r = response.json()
+    time = r['data']
+    timeformat =  datetime.datetime.strptime(time,"%Y-%m-%d %H:%M:%S")
+
+  
+    update_time.time_tuple = (
+        int(timeformat.strftime('%Y')),
+        int(1),
+        #int(timeformat.strftime('%m')),
+        int(timeformat.strftime('%d')),
+        int(timeformat.strftime('%H')),
+        int(timeformat.strftime('%M')),
+        int(timeformat.strftime('%S')),
+        0, # Millisecond
+    )
+        #print (update_time.time_tuple)
+    update_time.update()
+    
+    #print("自動校時成功",datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    #print("自動校時成功",datetime())
+def test2():
+    ip = '10.8.1.151:4661'   #controlip
+    path = '/api/v1/data/device'
+    request_string = "ip=" + str(ip)
+    headers = {'Content-Type': 'application/json'}
+    api_url_base = "http://" + serverip + ":" + str(port) + path
+    response = requests.get(api_url_base,params=request_string, headers=headers) 
+    
+    # print response 
+    print(response) 
+    
+    # print json content
+    r = response.json()
+    data = r['data']
+
+    print(data['name']) 
+
+def test3():
+    ip = '10.8.1.151:4661'   #controlip
+    path = '/api/v1/data/log'
+    headers = {'Content-Type': 'application/json'}
+    api_url_base = "http://" + serverip + ":" + str(port) + path
+
+   
+    data = []
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    dev_c=conn.cursor()
+    dev_c.execute('select * from scanlog limit 10')
+    for row in dev_c:
+        temp_obj = {
+            "cardnbr": row[0],
+            "date" : row[1],
+            "time" : row[2],
+            "auth" : row[3],
+            "process" :row[4],
+            "result" : row[5]
+        }
+        data.append(temp_obj)
+        print(temp_obj)
+     
+    conn.commit()
+    conn.close()
+
+    # print(data)
+
+    # print(data)
+    postdata = {
+        'ip' : ip,
+        'data' :data
+    }
+    response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata))
+    print(response.json())
+    print(response.status_code)
+
+def test4():
+    ip = '10.8.1.151:4661'   #controlip
+    path = '/api/v1/data/log'
+    headers = {'Content-Type': 'application/json'}
+    api_url_base = "http://" + serverip + ":" + str(port) + path
+   
+    data = []
+    cnt=0
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute('select * from scanlog where rtnflag=0')
+    for row in c:
+        temp_obj = {
+            "cardnbr": row[0],
+            "date" : row[1],
+            "time" : row[2],
+            "auth" : row[3],
+            "process" :row[4],
+            "result" : row[5]
+        }
+        data.append(temp_obj)
+        cnt+=1
+        # print(temp_obj)        
+    postdata = {
+        'ip' : ip,
+        'data' :data
+    }
+
+    response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata))
+    #print(response.json())
+    if cnt!=0:
+        if response.status_code==200:
+            print("上傳成功,共",cnt,"筆")
+            c.execute('update scanlog set rtnflag=1 where rtnflag=0')
+        else:
+            print("上傳失敗")
+    else:
+        print("無上傳資料")
+    conn.commit()
+    conn.close()
+test4()
