@@ -9,7 +9,7 @@ serverip = "10.8.0.1"
 port = 80
 localport =4661
 def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
-   
+    port = 8080
     headers = {'Content-Type': 'application/json'}
     api_url_base = "http://" + serverip + ":" + str(port) +"/api/v1/remote/dcode"
     request_string = "token=" + token + "&"
