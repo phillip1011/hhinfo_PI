@@ -338,10 +338,10 @@ def apibooking_customers():
         revice_data = json.loads(request.data)
         conn=sqlite3.connect("cardno.db")
         c=conn.cursor()
-        c.execute('CREATE TABLE IF NOT EXISTS booking_customers(id TEXT,booking_id TEXT,customer_id TEXT)')
+        c.execute('CREATE TABLE IF NOT EXISTS booking_customers(id TEXT,booking_id TEXT,customer_id TEXT,source TEXT)')
         c.execute('DELETE FROM booking_customers')
         for value in revice_data:
-            c.execute("INSERT INTO booking_customers values (?,?,?)", (value["id"],value["booking_id"],value["customer_id"],))
+            c.execute("INSERT INTO booking_customers values (?,?,?,?)", (value["id"],value["booking_id"],value["customer_id"],value["source"],))
         conn.commit()
         conn.close()
         status_code = flask.Response(status=203)

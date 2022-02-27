@@ -655,4 +655,10 @@ def test4():
         print("無上傳資料")
     conn.commit()
     conn.close()
-test4()
+def test5():
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute('DROP TABLE booking_customers')
+    conn.commit()
+    conn.close()
+test5()

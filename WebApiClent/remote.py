@@ -51,8 +51,8 @@ def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
 
 def report(clientip,txcode,token):
     while True:
-        time.sleep(15)
-        #time.sleep(60*3)
+        #time.sleep(15)
+        time.sleep(60*3)
         #token = "aGhpbmZvOjIwMjAwMTE2MjIxMDM5"
         rxstatus = relay.relaystatus 
         sxstatus = relay.read_sensor()

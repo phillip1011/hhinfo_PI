@@ -30,7 +30,7 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
     c1=conn.cursor()
 
     c.execute('CREATE TABLE IF NOT EXISTS cards(id TEXT,customer_id TEXT,card_uuid TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS booking_customers(id TEXT,booking_id TEXT,customer_id TEXT)')
+    c.execute('CREATE TABLE IF NOT EXISTS booking_customers(id TEXT,booking_id TEXT,customer_id TEXT,source TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS booking_histories(id TEXT,deviceid TEXT,date TEXT,range_id TEXT,aircontrol TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS scanlog(cardnbr TEXT,date TEXT,time TEXT,rtnflag TEXT,auth TEXT,process TEXT,result TEXT)')    
     
@@ -119,6 +119,11 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
                         # print(row[1])
                         # print(today)
                         # print(range_id)
+                        #-----------------------------------------------------
+                        # 要新增判斷source欄位為merge or normal , 
+
+
+                        #-----------------------------------------------------
                         c1.execute('select * from booking_histories where id=? and date=? and range_id=?' ,(row[1],today,range_id,))
                         xx=0
                         for row1 in c1: #找尋booking_histories資料庫中, 是否有此客戶的預約
@@ -133,12 +138,12 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
                                     ser.write(AR721R1OFF)
                                 else:
                                     relay.action(1,dooropentime,0)
-                                
-                                relay.action(3,255,0)
-                                if row1[4] == '1':
-                                    relay.action(4,255,0)
-                                else:
-                                    relay.action(4,0,0)
+                                if row[3]=='normal':
+                                    relay.action(3,255,0)
+                                    if row1[4] == '1':
+                                        relay.action(4,255,0)
+                                    else:
+                                        relay.action(4,0,0)
 
             else:   #一般租借-鐵卷門
                 if sensor0==1:  #S0=1 表示門狀態是關閉
