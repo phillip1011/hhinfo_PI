@@ -119,11 +119,6 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
                         # print(row[1])
                         # print(today)
                         # print(range_id)
-                        #-----------------------------------------------------
-                        # 要新增判斷source欄位為merge or normal , 
-
-
-                        #-----------------------------------------------------
                         c1.execute('select * from booking_histories where id=? and date=? and range_id=?' ,(row[1],today,range_id,))
                         xx=0
                         for row1 in c1: #找尋booking_histories資料庫中, 是否有此客戶的預約
@@ -172,11 +167,12 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
                                     else:
                                         relay.action(1,dooropentime,0)
                                     
-                                    relay.action(3,255,0)
-                                    if row1[4] == '1':
-                                        relay.action(4,255,0)
-                                    else:
-                                        relay.action(4,0,0)
+                                    if row[3]=='normal':
+                                        relay.action(3,255,0)
+                                        if row1[4] == '1':
+                                            relay.action(4,255,0)
+                                        else:
+                                            relay.action(4,0,0)
                 else:  #S0=0 表示門狀態是開啟
                     c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
                     i=0
