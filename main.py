@@ -40,7 +40,7 @@ for row1 in dev_c:
 conn.commit()
 conn.close()
 
-
+#123
 def ar721_callback(uid,node):
     print('doortype=',doortype)
     uid =str(uid).zfill(10)
