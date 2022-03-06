@@ -41,9 +41,14 @@ def read_hand():
     #print("")
     return xx
 
-
+#[0,0,0,0,0,0]
+#[[0,0],0,0,0,0,0]
 def read_sensor():
+
     xx = []
+    # xx = {
+
+    # }
     for i in range(6):
         x = GPIO.input(SEN_PIN[i])
         #print(x, end="")

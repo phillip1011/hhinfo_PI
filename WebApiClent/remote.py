@@ -8,7 +8,10 @@ serverip = "10.8.0.1"
 #port = 44372
 port = 80
 localport =4661
-def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
+def backupdcode(token, uid, clientip,gateno,rxstatus,sxstatus):
+    serverip = "114.35.246.115"
+    port=8080
+
     headers = {'Content-Type': 'application/json'}
     api_url_base = "http://" + serverip + ":" + str(port) +"/api/v1/remote/dcode"
     request_string = "token=" + token + "&"
@@ -30,6 +33,7 @@ def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
     # print(request_string)
     try:
         response = requests.get(api_url_base, params=request_string, headers=headers, verify=False,timeout=5)
+        print(response.text)
         print('伺服器回傳狀態:'+str(response.status_code))
         if (response.status_code ==200):
             #print("GET DATA")
@@ -49,10 +53,87 @@ def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
         return b'\x01'
     #response = requests.get(api_url_base, params=query)
 
+
+
+
+
+
+def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
+    serverip = "114.35.246.115"
+    port=8080
+
+    headers = {'Content-Type': 'application/json'}
+    api_url_base = "http://" + serverip + ":" + str(port) +"/api/v1/remote/dcode"
+    # request_string = "token=" + token + "&"
+    # request_string += "txcode=" + uid + "&"
+    # request_string += "controlip=" + str(clientip) +":" + str(localport) + "&"
+    # request_string += "gateno=" +str(gateno) + "&"
+    # request_string += "eventtime=" + time.strftime("%Y%m%d%H%M%S", time.localtime())
+    # # print(request_string)
+    # for i in range(4):
+    #     request_string += "&r" + str(i+1) + "status=" + str(rxstatus[i])
+    # for i in range(6):
+    #     request_string += "&s" + str(i+1) + "status=" + str(sxstatus[i])
+    # # print(api_url_base + "?" + request_string)
+    # if scannername=='AR721':
+    #     request_string += "&"+"scannername="+str(scannername)
+    #     for node in range(1,ar721cnt+1):
+    #         request_string += "&"+"scannernode" + str(node)+"=" + str(node)
+    nodes = []
+    for i in range(ar721cnt+1):
+        nodes.append(i)
+    data = {
+        'token' : token,
+        'txcode' : uid,
+        'controlip' : str(clientip) +":" + str(localport),
+        'gateno' : str(gateno),
+        'eventtime' : time.strftime("%Y%m%d%H%M%S", time.localtime()),
+        'relays' : rxstatus,
+        'sensors' : sxstatus,
+        'nodes' :ar721Nodes
+    }
+    
+    
+    # print(request_string)
+    try:
+        # response = requests.get(api_url_base, params=request_string, headers=headers, verify=False,timeout=5)
+        postdata = {
+            'data' :data
+        }
+        response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata))
+
+
+        print(response.text)
+        print('伺服器回傳狀態:'+str(response.status_code))
+        if (response.status_code ==200):
+            #print("GET DATA")
+            print ('伺服器回傳狀態',response.text)
+            if uid != b'9999090000':
+                return response.text
+            else:
+                print("SEND　REPORT ")
+                return b'\x00'
+        else:
+            print("GET DATA STATUS ERROR !")
+            return b'\x01'
+    except:
+        print("GET DATA CONNECT ERROR !")
+        return b'\x01'
+    else:
+        return b'\x01'
+    #response = requests.get(api_url_base, params=query)
+
+
+
+
+
+
+
+
 def report(clientip,txcode,token):
     while True:
-        #time.sleep(15)
-        time.sleep(60*3)
+        time.sleep(10)
+        #time.sleep(60*3)
         #token = "aGhpbmZvOjIwMjAwMTE2MjIxMDM5"
         rxstatus = relay.relaystatus 
         sxstatus = relay.read_sensor()

@@ -9,6 +9,7 @@ import threading
 import models.relay as relay
 import WebApiClent.update_time as update_time
 import models.ar721 as ar721
+from chkcard import ar721comm
 from datetime import datetime
 from time import sleep
 import serial
@@ -48,11 +49,11 @@ def api01():
         return status_code
 
     token_base64 = request.headers.get('token')
-    print(token_base64)
+    # print(token_base64)
     token = base64.b64decode(str(token_base64)+"=")
     urlstring = request.url
-    print(token)
-    print (request.method)
+    # print(token)
+    # print (request.method)
     if token != token_key:
         status_code = flask.Response(status=401)
         return status_code
@@ -66,8 +67,8 @@ def api01():
 
         revice_data = json.loads(request.data)
         if revice_data["serverip"] != serverip :
-            print(revice_data["serverip"])
-            print(serverip)
+            # print(revice_data["serverip"])
+            # print(serverip)
             status_code = flask.Response(status=403)
             return status_code
 
@@ -92,8 +93,28 @@ def api01():
             gateno = revice_data["relay"][value]["gateno"]
             opentime = revice_data["relay"][value]["opentime"]
             waittime = revice_data["relay"][value]["waittime"]
+            nodeName = revice_data["relay"][value]["nodeName"]
             if isinstance(gateno,int) and isinstance(opentime,int) and isinstance(waittime,int):
-                relay.action(gateno,opentime,waittime)
+                node=nodeName
+                if doortype=='一般':   #設定一般門和鐵卷門開啟時間
+                    dooropentime=5
+                else:
+                    dooropentime=2
+
+                if (gateno == 1 or gateno ==2) and ar721cnt>0:
+                    if gateno == 2 and nodeName>100:
+                        node = node+100
+
+                    ser = serial.Serial(sname, baurate, timeout=1)
+                    AR721R1ON=ar721comm(node,'0x21','0x82')   #door relay on
+                    AR721R1OFF=ar721comm(node,'0x21','0x83')  #door relay off                    
+                    ser.write(AR721R1ON)
+                    sleep(dooropentime)
+                    ser.write(AR721R1OFF)
+                        
+
+                else:
+                    relay.action(gateno,opentime,waittime)
             else: 
                 status_code = 204
 
@@ -123,7 +144,6 @@ def api01():
             mimetype='application/json'
         )
         return response
- 
         
 
     elif request.method == "GET":
