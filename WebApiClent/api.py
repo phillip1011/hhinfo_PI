@@ -41,13 +41,20 @@ def checkserverip(request):
 
 
 
-def ar721action(dooropentime):
+def ar721action(gateno,dooropentime):
     ser = serial.Serial(sname, baurate, timeout=1)
     AR721R1ON=ar721comm(1,'0x21','0x82')   #door relay on
-    AR721R1OFF=ar721comm(1,'0x21','0x83')  #door relay off                    
-    ser.write(AR721R1ON)
-    time.sleep(dooropentime)
-    ser.write(AR721R1OFF)
+    AR721R1OFF=ar721comm(1,'0x21','0x83')  #door relay off
+    AR721R2ON=ar721comm(1,'0x21','0x85')   #alarm relay on
+    AR721R2OFF=ar721comm(1,'0x21','0x86')  #alarm relay off 
+    if(gateno ==1):                
+        ser.write(AR721R1ON)
+        time.sleep(dooropentime)
+        ser.write(AR721R1OFF)
+    else:
+        ser.write(AR721R2ON)
+        time.sleep(dooropentime)
+        ser.write(AR721R2OFF)
 
 @app.route('/api/v3/remote/control', methods=['POST','GET'])
 def api01():
@@ -115,14 +122,8 @@ def api01():
 
                 if (gateno == 1 or gateno ==2) and controlname == 'AR721':
 
-
-
-                    t = threading.Thread(target=ar721action, args=(dooropentime,))
+                    t = threading.Thread(target=ar721action, args=(gateno,dooropentime,))
                     t.start()
-
-                    
-                        
-
                 else:
                     relay.action(gateno,opentime,waittime)
             else: 
