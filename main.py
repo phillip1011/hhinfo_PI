@@ -66,6 +66,8 @@ if __name__=='__main__':
     #loop for change relay off
     relay.setup()
     relay.start_relay()
+  
+
     
     #loop for checking internet every 1 min
     # netstatus=1   # 0表示boot時, 1表示每X分鐘檢查
@@ -76,50 +78,27 @@ if __name__=='__main__':
     ser = serial.Serial(sname, baurate, timeout=1)
     #input=b'\x7e\x04\x01\x25\xdb\x01'
     isAr721=False
-    ar721cnt=0
-    nodes=[]
-
-   
-    for n in [1,2,3,4,5,101,102,103,104,105]:
-        ar721.scode(sname,baurate,n,'0x25')
-        output=ser.read(64)
-        if len(output) != 0:
-            if hex(output[0])=='0x7e':
-                isAr721 = True
-                ar721cnt +=1
-                print("check AR721 node=",n,"sucess")
-                if n > 100:
-                    type = 'iron'
-                else :
-                    type = 'normal'
-                nodes.append({
-                        'nodeName': n,
-                        'nodeKernel' : 'ar721' ,
-                        'nodeType' : type
-                })
-   
-     
-    nodes.append({
-                        'nodeName': '100',
-                        'nodeKernel' : 'ar721' ,
-                        'nodeType' : 'iron'
-                })
     
+   
 
+    #check  721 or r35c
+   
+ 
 
+    input=b'\x7e\x04\x01\x25\xdb\x01'
+    ser.write(input)
+    sleep(0.2)
+    output=ser.read(64)
     
-    if ar721cnt>0:
+    if output!=b'':
+        print("AR721 Start")
         controlname="AR721"
         print(controlname," Start")
-        t = threading.Thread(target=ar721.do_read_ar721, args=(sname,baurate,ar721cnt))
+        t = threading.Thread(target=ar721.do_read_ar721, args=(sname,baurate))
         t.setDaemon(True)
         t.start()
     else:
-        nodes.append({
-                        'nodeName': '1',
-                        'nodeKernel' : 'r35c' ,
-                        'nodeType' : ''
-        })
+        print("R35C Start")
         controlname="R35C"
         print(controlname," Start")
         block=1
@@ -132,8 +111,7 @@ if __name__=='__main__':
     remote.port = serverport
     remote.localport =localport
     remote.scannername=controlname
-    remote.ar721cnt=ar721cnt
-    remote.ar721Nodes=nodes
+    
 
     t3 = threading.Thread(target=remote.report, args=(controlip, "9999099990",token))
     t3.setDaemon(True)
@@ -152,7 +130,5 @@ if __name__=='__main__':
     api.sname=sname
     api.baurate=baurate
     api.controlname=controlname
-    if ar721cnt>0:
-        api.ar721cnt=ar721cnt
-        api.doortype=doortype
+    api.doortype=doortype
     api.run()

@@ -69,9 +69,20 @@ def do_action(gateno,opentime,waittime):
         time.sleep(waittime)
     if opentime == 0:
         GPIO.output(relay_pin[gateno], 1)
+        # check 
+        if(GPIO.input(relay_pin[gateno]) == 1):
+            print("已關閉relay")
+        else:
+            print("關閉relay 失敗")
         relaystatus[gateno] = 0
     else:
         GPIO.output(relay_pin[gateno], 0)
+        # check 
+        if(GPIO.input(relay_pin[gateno]) == 0):
+            print("已開啟relay")
+        else:
+            print("開啟relay 失敗")
+
         relaystatus[gateno] = 1
     if opentime < 255:
         time.sleep(opentime)
@@ -82,6 +93,8 @@ def do_action(gateno,opentime,waittime):
 def action(gateno,opentime,waittime):
     t = threading.Thread(target=do_action, args=(gateno, opentime, waittime))
     t.start()
+
+
 
 def cleanup():
     try:

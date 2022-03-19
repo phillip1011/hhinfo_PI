@@ -27,8 +27,7 @@ def backupdcode(token, uid, clientip,gateno,rxstatus,sxstatus):
     # print(api_url_base + "?" + request_string)
     if scannername=='AR721':
         request_string += "&"+"scannername="+str(scannername)
-        for node in range(1,ar721cnt+1):
-            request_string += "&"+"scannernode" + str(node)+"=" + str(node)
+      
 
     # print(request_string)
     try:
@@ -79,9 +78,6 @@ def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
     #     request_string += "&"+"scannername="+str(scannername)
     #     for node in range(1,ar721cnt+1):
     #         request_string += "&"+"scannernode" + str(node)+"=" + str(node)
-    nodes = []
-    for i in range(ar721cnt+1):
-        nodes.append(i)
     data = {
         'token' : token,
         'txcode' : uid,
@@ -89,8 +85,7 @@ def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
         'gateno' : str(gateno),
         'eventtime' : time.strftime("%Y%m%d%H%M%S", time.localtime()),
         'relays' : rxstatus,
-        'sensors' : sxstatus,
-        'nodes' :ar721Nodes
+        'sensors' : sxstatus
     }
     
     

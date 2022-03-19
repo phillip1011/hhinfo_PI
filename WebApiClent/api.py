@@ -39,6 +39,16 @@ def checkserverip(request):
         return status_code
 
 
+
+
+def ar721action(dooropentime):
+    ser = serial.Serial(sname, baurate, timeout=1)
+    AR721R1ON=ar721comm(1,'0x21','0x82')   #door relay on
+    AR721R1OFF=ar721comm(1,'0x21','0x83')  #door relay off                    
+    ser.write(AR721R1ON)
+    time.sleep(dooropentime)
+    ser.write(AR721R1OFF)
+
 @app.route('/api/v3/remote/control', methods=['POST','GET'])
 def api01():
     try:
@@ -66,6 +76,8 @@ def api01():
             return status_code
 
         revice_data = json.loads(request.data)
+        print("Receive Server IP : "+revice_data["serverip"])
+        print("Allow Server IP : "+serverip)
         if revice_data["serverip"] != serverip :
             # print(revice_data["serverip"])
             # print(serverip)
@@ -93,24 +105,22 @@ def api01():
             gateno = revice_data["relay"][value]["gateno"]
             opentime = revice_data["relay"][value]["opentime"]
             waittime = revice_data["relay"][value]["waittime"]
-            nodeName = revice_data["relay"][value]["nodeName"]
+            #nodeName = revice_data["relay"][value]["nodeName"]
             if isinstance(gateno,int) and isinstance(opentime,int) and isinstance(waittime,int):
-                node=nodeName
+                node=1
                 if doortype=='一般':   #設定一般門和鐵卷門開啟時間
                     dooropentime=5
                 else:
                     dooropentime=2
 
-                if (gateno == 1 or gateno ==2) and ar721cnt>0:
-                    if gateno == 2 and nodeName>100:
-                        node = node+100
+                if (gateno == 1 or gateno ==2) and controlname == 'AR721':
 
-                    ser = serial.Serial(sname, baurate, timeout=1)
-                    AR721R1ON=ar721comm(node,'0x21','0x82')   #door relay on
-                    AR721R1OFF=ar721comm(node,'0x21','0x83')  #door relay off                    
-                    ser.write(AR721R1ON)
-                    sleep(dooropentime)
-                    ser.write(AR721R1OFF)
+
+
+                    t = threading.Thread(target=ar721action, args=(dooropentime,))
+                    t.start()
+
+                    
                         
 
                 else:
@@ -281,6 +291,7 @@ def api02():
         #update_time.update2(revice_data)
         status_code = flask.Response(status=203)
         if controlname=="AR721":
+            node=1
             ser = serial.Serial(sname, baurate, timeout=1)
             sysyy=int(datetime.now().strftime('%y'))
             sysmm=int(datetime.now().strftime('%m'))
@@ -292,20 +303,22 @@ def api02():
             if sysww==0:
                 sysww=7
             print("PI系統時間=",sysyy,'-',sysmm,'-',sysdd,' ',syshh,':',sysmin,':',sysss)
-            for node in range(1,ar721cnt+1):
-                xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy
-                sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
-                sum =sum % 256
-                # print(sysyy,sysmm,sysdd)
-                # print(sysww)
-                # print(syshh,sysmin,sysss)
-                # print('xor=',hex(xor))
-                # print('sum=',hex(sum))
-                input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
-                # print(input)
-                ser.write(input)
-                sleep(0.2)
-                print(controlname,"node=",node, "校時完成")
+            xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy
+            
+            sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
+            sum =sum % 256
+            # print(sysyy,sysmm,sysdd)
+            # print(sysww)
+            # print(syshh,sysmin,sysss)
+            # print('xor=',hex(xor))
+            # print('sum=',hex(sum))
+            input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
+            # print(input)
+            ser.write(input)
+            sleep(0.2)
+            print(controlname,"node=",node, "校時完成")
+          
+               
 
         return status_code
 
