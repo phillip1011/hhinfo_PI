@@ -10,6 +10,20 @@ sname = '/dev/ttyUSB0'
 ser = serial.Serial(sname, 9600, timeout=1)
 #node = b'\x01'
 
+
+
+def callback(uid):
+    #print ("revice nfc call back uid : ", uid)
+    if uid != '' :
+        uid =str(uid).zfill(10)
+        chkcard.chkcard(uid,"R35C",sname,baurate,doortype)
+        sxstatus = relay.read_sensor()
+        rxstatus = relay.relaystatus        
+        remote.scode(controlip,rxstatus,sxstatus)
+    else:
+        print("read nfc error")
+
+
 def string_hex(str1):
     an_integer = int(hex_string, 16)
     hex_value = hex(an_integer)
@@ -71,9 +85,10 @@ def get_event():
     except:
         return ''
 
-def do_read_r35c(no,r35c_callback = None):
+def do_read_r35c(_scanner):
     com_error = 0
     while True:
+        print("_____do_read_r35c_______")
         uid = get_event()
         if uid != '' :
             #print(uid)
@@ -82,6 +97,9 @@ def do_read_r35c(no,r35c_callback = None):
                 #uid = int(uid)
                 r35c_callback(uid)
         sleep(1)
+
+
+
 
 if __name__=='__main__':
     do_read_r35c('',None)

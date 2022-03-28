@@ -15,13 +15,20 @@ from time import sleep
 import serial
 import struct
 
+print("____________api.py run______________________")
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
 app.config['LIVESERVER_TIMEOUT'] = 2
 #controlip="127.0.0.1"
-port = 80
-#token_key=b'http://www.hhinfo.com.tw/'
+# port = 80
+#_server.token=b'http://www.hhinfo.com.tw/'
 #serverip="127.0.0.1"
+
+
+
+
+
+
 
 
 @app.route('/api/v2/remote/rcode', methods=['GET'])
@@ -41,8 +48,21 @@ def checkserverip(request):
 
 
 
+def verifyToken(receiveToken):
+    allowToken = _server.token
+    if receiveToken != allowToken:
+        return False
+    return True
+
+def verifyServerIp(reviceServerIp):
+    allowServerIp = _server.serverip
+    if reviceServerIp != allowServerIp:
+        print('verifyServerIp - receiveIP : '+str(reviceServerIp) +' != allowIP : '+str(allowServerIp))
+        return False
+    return True
+
 def ar721action(gateno,dooropentime):
-    ser = serial.Serial(sname, baurate, timeout=1)
+    ser = serial.Serial(_scanner.sname, _scanner.baurate, timeout=1)
     AR721R1ON=ar721comm(1,'0x21','0x82')   #door relay on
     AR721R1OFF=ar721comm(1,'0x21','0x83')  #door relay off
     AR721R2ON=ar721comm(1,'0x21','0x85')   #alarm relay on
@@ -56,22 +76,16 @@ def ar721action(gateno,dooropentime):
         time.sleep(dooropentime)
         ser.write(AR721R2OFF)
 
-@app.route('/api/v3/remote/control', methods=['POST','GET'])
+@app.route('/api/v3/remote/control', methods=['POST'])
 def api01():
     try:
-        test = request.headers.get('token')
+        token = request.headers.get('token')
 
     except:
         status_code = flask.Response(status=401)
         return status_code
 
-    token_base64 = request.headers.get('token')
-    # print(token_base64)
-    token = base64.b64decode(str(token_base64)+"=")
-    urlstring = request.url
-    # print(token)
-    # print (request.method)
-    if token != token_key:
+    if verifyToken(token) != True:
         status_code = flask.Response(status=401)
         return status_code
         
@@ -83,11 +97,7 @@ def api01():
             return status_code
 
         revice_data = json.loads(request.data)
-        print("Receive Server IP : "+revice_data["serverip"])
-        print("Allow Server IP : "+serverip)
-        if revice_data["serverip"] != serverip :
-            # print(revice_data["serverip"])
-            # print(serverip)
+        if  verifyServerIp(revice_data["serverip"]) != True:
             status_code = flask.Response(status=403)
             return status_code
 
@@ -115,12 +125,12 @@ def api01():
             #nodeName = revice_data["relay"][value]["nodeName"]
             if isinstance(gateno,int) and isinstance(opentime,int) and isinstance(waittime,int):
                 node=1
-                if doortype=='一般':   #設定一般門和鐵卷門開啟時間
+                if _device.doortype=='一般':   #設定一般門和鐵卷門開啟時間
                     dooropentime=5
                 else:
                     dooropentime=2
 
-                if (gateno == 1 or gateno ==2) and controlname == 'AR721':
+                if (gateno == 1 or gateno ==2) and _scanner.name == 'AR721':
 
                     t = threading.Thread(target=ar721action, args=(gateno,dooropentime,))
                     t.start()
@@ -129,7 +139,7 @@ def api01():
             else: 
                 status_code = 204
 
-        rc2 = {"controlip": controlip}
+        rc2 = {"controlip": _device.localip}
         i = 1
         relay_status = {}
         for rx in relay.relaystatus:
@@ -155,59 +165,17 @@ def api01():
             mimetype='application/json'
         )
         return response
-        
-
-    elif request.method == "GET":
-        try:
-            print(request.args.get('serverip') )
-            if request.args.get('serverip').strip() != serverip :
-                status_code = flask.Response(status=403)
-                return status_code
-        except:
-            status_code = flask.Response(status=403)
-            return status_code
-
-        rc2 = {"controlip": controlip}
-        i = 1
-        relay_status = {}
-        for rx in relay.relaystatus:
-            temp = {str(i) : str(rx)}
-            relay_status.update(temp)
-            i = i + 1
-
-        rc2.update({"relay": relay_status })
-        sensor = relay.read_sensor()
-        sensor_status = {}
-        i = 1
-        yy = {}
-        for sx in sensor:
-            temp = {str(i): str(sx)}
-            sensor_status.update(temp)
-            i = i + 1
-
-        rc2.update({"sensor": sensor_status})
-        print(rc2)
-        response = app.response_class(
-            response=json.dumps(rc2),
-            status=200,
-            mimetype='application/json'
-        )
-        return response
 
 
 @app.route('/api/v3/remote/control/relay/<int:id>', methods=['GET'])
 def api01A(id):
-    token_base64 = request.headers.get('token')
-    token = base64.b64decode(token_base64 + "=")
-    urlstring = request.url
-    print(token)
-    print(request.method)
-    if token != token_key:
+    token = request.headers.get('token')
+    if verifyToken(token) != True:
         status_code = flask.Response(status=401)
         return status_code
         
     if request.method == "GET":      
-        rc2 = {"controlip": controlip}
+        rc2 = {"controlip": _device.localip}
         relay_status = {}
         temp = {str(id) : str(relay.relaystatus[id])}
         relay_status.update(temp)
@@ -221,17 +189,13 @@ def api01A(id):
 
 @app.route('/api/v3/remote/control/sensor/<int:id>', methods=['GET'])
 def api01B(id):
-    token_base64 = request.headers.get('token')
-    token = base64.b64decode(token_base64 + "=")
-    urlstring = request.url
-    print(token)
-    print(request.method)
-    if token !=token_key:
+    token = request.headers.get('token')
+    if verifyToken(token) != True:
         status_code = flask.Response(status=401)
         return status_code
         
     if request.method == "GET":       
-        rc2 = {"controlip": controlip}
+        rc2 = {"controlip": _device.localip}
         sensor = relay.read_sensor()
         sensor_status = {}
         temp = {str(id) : str(sensor[id])}
@@ -245,24 +209,13 @@ def api01B(id):
         return response
 
 
-@app.route('/api/v3/remote/control/time', methods=['POST','GET'])
+@app.route('/api/v3/remote/control/time', methods=['POST'])
 def api02():
-    token_base64 = request.headers.get('token')
-    token = base64.b64decode(token_base64 + "=")
-    urlstring = request.url
-    print(urlstring)
-    #print(token)
-    #print(token_key)
-    print (request.method)
-    if token != token_key:
+    token = request.headers.get('token')
+    if verifyToken(token) != True:
         status_code = flask.Response(status=401)
         return status_code
-        
-    #revice_data = json.loads(request.data)
-    #if revice_data["serverip"] != serverip :
-    #    status_code = flask.Response(status=301)
-    #    return status_code
-        
+
     if request.method == 'POST':       
         try:
             test = json.loads(request.data)
@@ -271,9 +224,9 @@ def api02():
             return status_code
 
         revice_data = json.loads(request.data)
-        print ("serverip:",serverip)
-        print (revice_data["serverip"])
-        if str(revice_data["serverip"]) != str(serverip) :
+        print('control/time receive')
+        print(revice_data)
+        if  verifyServerIp(revice_data["serverip"]) != True:
             status_code = flask.Response(status=403)
             return status_code
 
@@ -291,9 +244,9 @@ def api02():
         update_time.update()
         #update_time.update2(revice_data)
         status_code = flask.Response(status=203)
-        if controlname=="AR721":
+        if _scanner.name=="AR721":
             node=1
-            ser = serial.Serial(sname, baurate, timeout=1)
+            ser = serial.Serial(_scanner.sname, _scanner.baurate, timeout=1)
             sysyy=int(datetime.now().strftime('%y'))
             sysmm=int(datetime.now().strftime('%m'))
             sysdd=int(datetime.now().strftime('%d'))
@@ -317,36 +270,19 @@ def api02():
             # print(input)
             ser.write(input)
             sleep(0.2)
-            print(controlname,"node=",node, "校時完成")
-          
-               
+            print(_scanner.name,"node=",node, "校時完成")
 
         return status_code
 
-    elif request.method == 'GET':
-        rc= {"controlip": controlip}
-        time.strftime("%Y%m%d%H%M%S", time.localtime())
-        rc.update({"Year": time.strftime("%Y", time.localtime())})
-        rc.update({"Month": time.strftime("%m", time.localtime())})
-        rc.update({"Day": time.strftime("%d", time.localtime())})
-        rc.update({"Hour": time.strftime("%H", time.localtime())})
-        rc.update({"Minute": time.strftime("%M", time.localtime())})
-        rc.update({"Second": time.strftime("%S", time.localtime())})
-        response = app.response_class(
-            response=json.dumps(rc),
-            status=200,
-            mimetype='application/json'
-        )
-        return response
+   
     
 
 
 
 @app.route('/api/v3/remote/syns/cards', methods=['POST'])
 def apicards():
-    token_base64 = request.headers.get('token')
-    token = base64.b64decode(token_base64 + "=")
-    if token == token_key:
+    token = request.headers.get('token')
+    if verifyToken(token) != True:
         revice_data = json.loads(request.data)
         conn=sqlite3.connect("cardno.db")
         c=conn.cursor()
@@ -366,9 +302,8 @@ def apicards():
 
 @app.route('/api/v3/remote/syns/booking_customers', methods=['POST'])
 def apibooking_customers():
-    token_base64 = request.headers.get('token')
-    token = base64.b64decode(token_base64 + "=")
-    if token == token_key:
+    token = request.headers.get('token')
+    if verifyToken(token) != True:
         revice_data = json.loads(request.data)
         conn=sqlite3.connect("cardno.db")
         c=conn.cursor()
@@ -386,9 +321,8 @@ def apibooking_customers():
 
 @app.route('/api/v3/remote/syns/booking_histories', methods=['POST'])
 def apibooking_histories():
-    token_base64 = request.headers.get('token')
-    token = base64.b64decode(token_base64 + "=")
-    if token == token_key:
+    token = request.headers.get('token')
+    if verifyToken(token) != True:
         revice_data = json.loads(request.data)
         conn=sqlite3.connect("cardno.db")
         c=conn.cursor()
@@ -406,13 +340,11 @@ def apibooking_histories():
 
 @app.route('/api/v3/remote/syns/spcards', methods=['POST'])
 def apispcards():
-    token_base64 = request.headers.get('token')
-    token = base64.b64decode(token_base64 + "=")
-    if token == token_key:
+    token = request.headers.get('token')
+    if verifyToken(token) != True:
         revice_data = json.loads(request.data)
         conn=sqlite3.connect("cardno.db")
         c=conn.cursor()
-
         c.execute('CREATE TABLE IF NOT EXISTS spcards(id TEXT,customer_id TEXT,authority TEXT)')
         c.execute('DELETE FROM spcards')
         for value in revice_data:
@@ -427,9 +359,8 @@ def apispcards():
 
 @app.route('/api/v3/remote/syns/device', methods=['POST'])
 def apiDeviceDate():
-    token_base64 = request.headers.get('token')
-    token = base64.b64decode(token_base64 + "=")
-    if token == token_key:
+    token = request.headers.get('token')
+    if verifyToken(token) != True:
         revice_data = json.loads(request.data)
         conn=sqlite3.connect("cardno.db")
         c=conn.cursor()
@@ -466,9 +397,8 @@ def apiDeviceDate():
 @app.route('/api/v3/remote/syns/openword', methods=['POST'])
 def apiopenword():
     #開門密碼
-    token_base64 = request.headers.get('token')
-    token = base64.b64decode(token_base64 + "=")
-    if token == token_key:
+    token = request.headers.get('token')
+    if verifyToken(token) != True:
         revice_data = json.loads(request.data)
         #要加型態判斷
 
@@ -518,11 +448,13 @@ def apiopenword():
             bytes([xor])+ 
             bytes([sum])
         )
-        ser = serial.Serial(sname, baurate, timeout=1)
+        ser = serial.Serial(_scanner.sname, _scanner.baurate, timeout=1)
         ser.write(comm)
         sleep(0.2)
 
     status_code = flask.Response(status=203)
     return status_code
 def run():
-    app.run(debug=False, use_reloader=False, threaded=False, host="0.0.0.0", port=port)
+    _device.show()
+    print("____API run_____port : "+str(_device.localport))
+    app.run(debug=False, use_reloader=False, threaded=False, host="0.0.0.0", port=_device.localport)

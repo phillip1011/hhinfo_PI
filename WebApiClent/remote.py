@@ -4,14 +4,13 @@ import time
 import models.relay as relay
 
 #serverip = "localhost"
-serverip = "10.8.0.1"
-#port = 44372
-port = 80
-localport =4661
-def backupdcode(token, uid, clientip,gateno,rxstatus,sxstatus):
-    serverip = "114.35.246.115"
-    port=8080
+# serverip = "10.8.0.1"
+# #port = 44372
+# port = 80
+# localport =4661
 
+
+def backupdcode(token, uid, clientip,gateno,rxstatus,sxstatus):
     headers = {'Content-Type': 'application/json'}
     api_url_base = "http://" + serverip + ":" + str(port) +"/api/v1/remote/dcode"
     request_string = "token=" + token + "&"
@@ -52,36 +51,13 @@ def backupdcode(token, uid, clientip,gateno,rxstatus,sxstatus):
         return b'\x01'
     #response = requests.get(api_url_base, params=query)
 
-
-
-
-
-
 def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
-    serverip = "114.35.246.115"
-    port=8080
-
     headers = {'Content-Type': 'application/json'}
-    api_url_base = "http://" + serverip + ":" + str(port) +"/api/v1/remote/dcode"
-    # request_string = "token=" + token + "&"
-    # request_string += "txcode=" + uid + "&"
-    # request_string += "controlip=" + str(clientip) +":" + str(localport) + "&"
-    # request_string += "gateno=" +str(gateno) + "&"
-    # request_string += "eventtime=" + time.strftime("%Y%m%d%H%M%S", time.localtime())
-    # # print(request_string)
-    # for i in range(4):
-    #     request_string += "&r" + str(i+1) + "status=" + str(rxstatus[i])
-    # for i in range(6):
-    #     request_string += "&s" + str(i+1) + "status=" + str(sxstatus[i])
-    # # print(api_url_base + "?" + request_string)
-    # if scannername=='AR721':
-    #     request_string += "&"+"scannername="+str(scannername)
-    #     for node in range(1,ar721cnt+1):
-    #         request_string += "&"+"scannernode" + str(node)+"=" + str(node)
+    api_url_base = "http://" + _server.serverip + ":" + str(_server.serverport) +"/api/v1/remote/dcode"
     data = {
         'token' : token,
         'txcode' : uid,
-        'controlip' : str(clientip) +":" + str(localport),
+        'controlip' : str(_device.localip) +":" + str(_device.localport),
         'gateno' : str(gateno),
         'eventtime' : time.strftime("%Y%m%d%H%M%S", time.localtime()),
         'relays' : rxstatus,
@@ -95,6 +71,7 @@ def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
         postdata = {
             'data' :data
         }
+        print('呼叫伺服器 : '+api_url_base +' ,postdata : '+json.dumps(postdata))
         response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata))
 
 
@@ -114,18 +91,9 @@ def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
     except:
         print("GET DATA CONNECT ERROR !")
         return b'\x01'
-    else:
-        return b'\x01'
     #response = requests.get(api_url_base, params=query)
 
-
-
-
-
-
-
-
-def report(clientip,txcode,token):
+def report(_server,_device):
     while True:
         time.sleep(10)
         #time.sleep(60*3)
@@ -133,15 +101,15 @@ def report(clientip,txcode,token):
         rxstatus = relay.relaystatus 
         sxstatus = relay.read_sensor()
         #sxstatus = [0, 0, 0, 0, 0, 0]
-        rc = dcode(token, str(txcode), clientip, 1, rxstatus, sxstatus)
+        rc = dcode(_server.token, str(9999099990), _device.localip, 1, rxstatus, sxstatus)
         if (rc == b'\x01'):
-            dcode(token, str(txcode), clientip, 1, rxstatus, sxstatus)
+            dcode(_server.token, str(9999099990), _device.localip, 1, rxstatus, sxstatus)
 
 def operdo(token, clientip,status):
     headers = {'Content-Type': 'application/json'}
-    api_url_base = "http://" + serverip + ":" + str(port) +"/api/v1/remote/operdo"
+    api_url_base = "http://" + _server.serverip + ":" + str(_server.serverport) +"/api/v1/remote/operdo"
     request_string = "token=" + token + "&"
-    request_string += "controlip=" + clientip +":" + str(localport) + "&"
+    request_string += "controlip=" + _device.localip +":" + str(_device.localport) + "&"
     request_string += "status=" +str(status)
     try:
         response = requests.get(api_url_base, params=request_string, headers=headers, verify=False,timeout=5)
@@ -153,10 +121,12 @@ def operdo(token, clientip,status):
         print("SEND STATUS CONNECT ERROR !")
 
 def scode(clientip,rxstatus,sxstatus):
+    print('_____')
+    print(_server)
     headers = {'Content-Type': 'application/json'}
-    api_url_base = "http://" + serverip + ":" + str(port) +"/api/v1/remote/scode"
+    api_url_base = "http://" + _server.serverip + ":" + str(_server.serverport) +"/api/v1/remote/scode"
 
-    request_string = "controlip=" + clientip + ":" + str(localport)  + "&"
+    request_string = "controlip=" + _device.localip + ":" + str(_device.localport)  + "&"
     request_string += "eventtime=" + time.strftime("%Y%m%d%H%M%S", time.localtime())
     for i in range(4):
         request_string += "&r" + str(i+1) + "status=" + str(rxstatus[i])
@@ -175,7 +145,7 @@ def scode(clientip,rxstatus,sxstatus):
     except:
         print("SEND STATUS CONNECT ERROR !")
 
-def monitor_sensor(clientip,token):
+def monitor_sensor(_server,_device):
     sxstatus = [0,0,0,0,0,0]
     rxstatus = [0,0,0,0]
     while True:

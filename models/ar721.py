@@ -1,7 +1,20 @@
 from time import sleep
 import serial
-from main import ar721_callback
 from datetime import datetime
+import chkcard as chkcard
+import WebApiClent.remote as remote
+import models.relay as relay
+
+
+def callback(uid):
+    print("__________do_read_ar721________________")
+    print(_device)
+    uid =str(uid).zfill(10)
+    chkcard.chkcard(uid,"AR721",_scanner.sname,_scanner.baurate,_device.doortype,1)
+    sxstatus = relay.read_sensor()
+    rxstatus = relay.relaystatus
+    remote.scode(_device.localip,rxstatus,sxstatus)
+
 
 def rtime(sname, baurate):
     ser = serial.Serial(sname, baurate, timeout=1)
@@ -20,14 +33,21 @@ def scode(sname,baurate,node,func):
     ser.write(comm)
     sleep(0.2)
     
-def do_read_ar721(sname,baurate):
-    ser = serial.Serial(sname, baurate, timeout=1)
+def do_read_ar721(scanner,device):
+    print("__________do_read_ar721________________")
+    global _device 
+    global _scanner
+    _device = device
+    _scanner = scanner
+   
+
+    ser = serial.Serial(_scanner.sname, _scanner.baurate, timeout=1)
     ser.flushInput()  # flush input buffer
     ser.flushOutput()  # flush output buffer
     node = 1
     while True:
        
-        scode(sname,baurate,node,'0x25')
+        scode(_scanner.sname,_scanner.baurate,node,'0x25')
         try:
             output = ser.read(64)
             # print('node=',node,output,len(output))
@@ -55,18 +75,19 @@ def do_read_ar721(sname,baurate):
                     UID[3] = output[24]
                     uid = int.from_bytes(UID, byteorder='big')
                     print('ar721刷卡記錄,node=',node,uid,ScanDate,ScanTime)
-                    scode(sname,baurate,node,'0x37')
+                    scode(_scanner.sname,_scanner.baurate,node,'0x37')
                     sleep(0.2)
-                    ar721_callback(uid,node)
+                    callback(uid)
                 else :
-                    scode(sname,baurate,node,'0x37')
+                    scode(_scanner.sname,_scanner.baurate,node,'0x37')
                     sleep(0.2)
             else:
-                scode(sname,baurate,node,'0x37')
+                scode(_scanner.sname,_scanner.baurate,node,'0x37')
         
 
 if __name__=='__main__':
+    print('____ar721_init___')
     #sname='/dev/ttyUSB0'
-    sname='/dev/ttyUSB0'
-    baurate=9600
+    # sname='/dev/ttyUSB0'
+    # baurate=9600
     do_read_ar721(sname,baurate)
