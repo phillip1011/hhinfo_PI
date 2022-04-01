@@ -59,7 +59,7 @@ def ar721comm(node,func,data):
 
 def chkcard(uid,scanner,device):
     print("____________chkcard_run__________________")
-    verifyopen(uid)
+    # verifyopen(uid)
     node = 1
     if device.doortype=='一般':   #設定一般門和鐵卷門開啟時間
         dooropentime=5
