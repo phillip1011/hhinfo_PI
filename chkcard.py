@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 import models.relay as relay
-import WebApiClent.remote as remote
+import WebApiClient.remote as remote
 from time import sleep
 import serial
 from upload import uploadlog
@@ -16,8 +16,52 @@ def ar721comm(node,func,data):
     # sleep(0.2)
     return comm
 
-def chkcard(uid,door_dev,sname,baurate,doortype,node):
-    if doortype=='一般':   #設定一般門和鐵卷門開啟時間
+
+
+# def verifyopen(uid):
+#     #先判斷card 是否存在
+#     conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+#     c=conn.cursor()
+#     c.execute('select * from cards where card_uuid=?' ,(uid,)) #找尋資料庫中, 是否有合法之卡號
+#     card = c.fetchone()
+#     if card == None:
+#         print('_____找不到card 回傳 False_________')
+#         return False
+#     #判斷全區卡
+#     c.execute('select * from spcards where customer_id=?' ,(card[1],))
+#     spcard = c.fetchone()
+#     if spcard != None:
+#         print('_____找到spcard 回傳 True_________')
+#         return True
+#     else:
+#         #判斷預約
+#         today=str(datetime.now().strftime('%Y-%m-%d'))
+#         time=str(datetime.now().strftime('%H:%M:%S'))
+#         #10:15:08 (HH:MM:SS)
+#         if int(time[3:5])>=30:
+#             range_id=str(time[0:2])+':30'
+#         else:
+#             range_id=str(time[0:2])+':00'
+#         print('_____43_________')
+#         c.execute(
+#                 'select * '
+#                 'from booking_customers as bc '
+#                 'join booking_histories as bh '
+#                 'on bc.booking_id = bh.id '
+#                 'where bc.customer_id = ? and bh.date = ? and bh.range_id = ?',
+#                     (row[1],today,range_id,))
+#         gg =  c.fetchone()
+#         print(gg)
+     
+    
+
+
+
+def chkcard(uid,scanner,device):
+    print("____________chkcard_run__________________")
+    verifyopen(uid)
+    node = 1
+    if device.doortype=='一般':   #設定一般門和鐵卷門開啟時間
         dooropentime=5
     else:
         dooropentime=2
@@ -47,7 +91,7 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
     else:
         range_id=str(time[0:2])+':00'
         print('系統時段=',range_id)
-    ser = serial.Serial(sname, baurate, timeout=1)
+    ser = serial.Serial(scanner.sname, scanner.baurate, timeout=1)
     c.execute('select * from cards where card_uuid=?' ,(uid,)) #找尋資料庫中, 是否有合法之卡號
     i=0
     for row in c: #資料庫筆數如果為0則表示無此卡號
@@ -73,7 +117,7 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
                 if sensor0==1:  #S0=1 表示門狀態是關閉
                     process="全區卡-開門"
                     result="1"
-                    if door_dev=="AR721":
+                    if scanner.name=="AR721":
                         ser.write(AR721R1ON)
                         sleep(dooropentime)
                         ser.write(AR721R1OFF)
@@ -94,9 +138,9 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
                         print("開AC")
                         relay.action(4,255,0)
                 else:   #門狀態是開啟
-                    if doortype=='鐵卷門':
+                    if device.doortype=='鐵卷門':
                         process="全區卡-關門"
-                        if door_dev=="AR721":
+                        if scanner.name=="AR721":
                             ser.write(AR721R2ON)
                             sleep(dooropentime)
                             ser.write(AR721R2OFF)
@@ -108,7 +152,7 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
         if process=="":
             print('一般卡')
             process="非預約時段"
-            if doortype=='一般':   #一般租借-一般門
+            if device.doortype=='一般':   #一般租借-一般門
                 c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
                 i=0
                 for row in c: #找尋booking_customers資料庫中, 是否有此客戶
@@ -127,7 +171,7 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
                             if xx>=1:
                                 process="租借時段-開門"
                                 result="1"
-                                if door_dev=="AR721":
+                                if scanner.name=="AR721":
                                     ser.write(AR721R1ON)
                                     sleep(dooropentime)
                                     ser.write(AR721R1OFF)
@@ -160,7 +204,7 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
                                 if xx>=1:
                                     process="租借時段-開門"
                                     result="1"
-                                    if door_dev=="AR721":
+                                    if scanner.name=="AR721":
                                         ser.write(AR721R1ON)
                                         sleep(dooropentime)
                                         ser.write(AR721R1OFF)
@@ -180,7 +224,7 @@ def chkcard(uid,door_dev,sname,baurate,doortype,node):
                         i+=1
                         print('booking_id:第'+str(i)+'筆'+row[1])
                         if i>=1:
-                            if door_dev=="AR721":
+                            if scanner.name=="AR721":
                                 ser.write(AR721R2ON)
                                 sleep(dooropentime)
                                 ser.write(AR721R2OFF)

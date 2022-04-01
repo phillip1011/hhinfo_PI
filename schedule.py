@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 import models.relay as relay
-import WebApiClent.remote as remote
+import WebApiClient.remote as remote
 
 rxstatus = [0, 0, 0, 0]
 sxstatus = [0, 0, 0, 0, 0, 0]

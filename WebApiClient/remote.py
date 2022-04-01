@@ -54,23 +54,20 @@ def backupdcode(token, uid, clientip,gateno,rxstatus,sxstatus):
 def dcode(token, uid, clientip,gateno,rxstatus,sxstatus):
     headers = {'Content-Type': 'application/json'}
     api_url_base = "http://" + _server.serverip + ":" + str(_server.serverport) +"/api/v1/remote/dcode"
-    data = {
+    postdata = {
         'token' : token,
         'txcode' : uid,
         'controlip' : str(_device.localip) +":" + str(_device.localport),
         'gateno' : str(gateno),
         'eventtime' : time.strftime("%Y%m%d%H%M%S", time.localtime()),
         'relays' : rxstatus,
-        'sensors' : sxstatus
+        'sensors' : sxstatus,
+        'scanners' : _scanner.name
     }
     
     
     # print(request_string)
     try:
-        # response = requests.get(api_url_base, params=request_string, headers=headers, verify=False,timeout=5)
-        postdata = {
-            'data' :data
-        }
         print('呼叫伺服器 : '+api_url_base +' ,postdata : '+json.dumps(postdata))
         response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata))
 

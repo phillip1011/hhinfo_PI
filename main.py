@@ -4,10 +4,10 @@ import serial
 import sqlite3
 from datetime import datetime
 from time import sleep
-import WebApiClent.login_internet as login_internet
+import WebApiClient.login_internet as login_internet
 import models.relay as relay
-import WebApiClent.api as api
-import WebApiClent.remote as remote
+import WebApiClient.api as api
+import WebApiClient.remote as remote
 
 
 import models.r35c as r35c
@@ -79,7 +79,7 @@ if __name__=='__main__':
     #loop for report every 3 min
     remote._server = _server
     remote._device = _device
-    
+    remote._scanner = _scanner
     
 
     t3 = threading.Thread(target=remote.report, args=(_server,_device))
@@ -92,14 +92,7 @@ if __name__=='__main__':
     t4.start()
 
     #start API flask
-    # api._server  = _server
-    # api._device = _device
-    # api.port = 4661
-    # api.token_key=token_key
-    # api.sname=sname
-    # api.baurate=baurate
-    # api.controlname=controlname
-    # api.doortype=doortype
+    
     api._server = _server
     api._device = _device
     api._scanner = _scanner

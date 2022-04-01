@@ -2,7 +2,7 @@ from time import sleep
 import serial
 from datetime import datetime
 import chkcard as chkcard
-import WebApiClent.remote as remote
+import WebApiClient.remote as remote
 import models.relay as relay
 
 
@@ -10,7 +10,7 @@ def callback(uid):
     print("__________do_read_ar721________________")
     print(_device)
     uid =str(uid).zfill(10)
-    chkcard.chkcard(uid,"AR721",_scanner.sname,_scanner.baurate,_device.doortype,1)
+    chkcard.chkcard(uid,_scanner,_device)
     sxstatus = relay.read_sensor()
     rxstatus = relay.relaystatus
     remote.scode(_device.localip,rxstatus,sxstatus)
@@ -24,6 +24,7 @@ def rtime(sname, baurate):
     print(ScanDate,Scantime)
 
 def scode(sname,baurate,node,func):
+    print("_______do_scode_____")
     #print("ar721-",node," send =",func)
     xor=255^node^int(func,16)
     sum=node+int(func,16)+xor
@@ -35,6 +36,10 @@ def scode(sname,baurate,node,func):
     
 def do_read_ar721(scanner,device):
     print("__________do_read_ar721________________")
+    print("__________scanner________________")
+    print(scanner)
+    print("__________device_________________")
+    print(device)
     global _device 
     global _scanner
     _device = device
@@ -85,9 +90,9 @@ def do_read_ar721(scanner,device):
                 scode(_scanner.sname,_scanner.baurate,node,'0x37')
         
 
-if __name__=='__main__':
-    print('____ar721_init___')
+# if __name__=='__main__':
+#     print('____ar721_init___')
     #sname='/dev/ttyUSB0'
     # sname='/dev/ttyUSB0'
     # baurate=9600
-    do_read_ar721(sname,baurate)
+    #do_read_ar721(sname,baurate)
