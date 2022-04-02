@@ -1,18 +1,17 @@
 from time import sleep
 import serial
-#import models.serial_name as serial_name
 from datetime import datetime
-#import serial_name as serial_name
+
+import chkcard as chkcard
+import WebApiClient.remote as remote
+import models.relay as relay
 
 com_error = 0
-#usb_names=["usb 1-1.1.3"]
-sname = '/dev/ttyUSB0'
-
-#node = b'\x01'
 
 
 
 def callback(uid):
+    print('-----getcallback-------'+str(uid))
     if uid != '' :
         uid =str(uid).zfill(10)
         chkcard.chkcard(uid,_scanner,_device)
@@ -47,7 +46,7 @@ def getdata():
     # 清空 READ BUFFER
     output=''
     try:
-        ser = serial.Serial(_server.sname, 9600, timeout=1)
+        ser = serial.Serial(_scanner.sname, 9600, timeout=1)
         output = ser.readline()
     except:
         print("error")
@@ -85,7 +84,7 @@ def get_event():
     except:
         return ''
 
-def do_read_r35c(device,scanner):
+def do_read_r35c(scanner,device):
     print("__________do_read_r35c________________")
     global _device 
     global _scanner
@@ -94,10 +93,11 @@ def do_read_r35c(device,scanner):
 
     com_error = 0
     while True:
+        print("__________do_read_r35c________________")
         uid = get_event()
         if uid != '' :
             callback(uid)
-        sleep(1)
+        sleep(0.2)
 
 
 

@@ -152,11 +152,11 @@ def monitor_sensor(_server,_device):
         if (sxstatus != relay.read_sensor()):
             rxstatus = relay.relaystatus
             sxstatus = relay.read_sensor()
-            scode(clientip,rxstatus,sxstatus)
+            scode(_device.localip,rxstatus,sxstatus)
         if (rxstatus != relay.relaystatus):
             rxstatus = relay.relaystatus
             sxstatus = relay.read_sensor()
-            scode(clientip,rxstatus,sxstatus)
+            scode(_device.localip,rxstatus,sxstatus)
 
         #rxstatus = relay.relaystatus
         # xx= relay.read_hand()
