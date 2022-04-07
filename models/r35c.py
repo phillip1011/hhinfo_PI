@@ -5,7 +5,7 @@ from datetime import datetime
 import chkcard as chkcard
 import WebApiClient.remote as remote
 import models.relay as relay
-
+import globals
 com_error = 0
 
 
@@ -15,9 +15,7 @@ def callback(uid):
     if uid != '' :
         uid =str(uid).zfill(10)
         chkcard.chkcard(uid,_scanner,_device)
-        sxstatus = relay.read_sensor()
-        rxstatus = relay.relaystatus
-        remote.scode(_device.localip,rxstatus,sxstatus)
+        remote.scode()
     else:
         print("read nfc error")
 
@@ -84,14 +82,7 @@ def get_event():
     except:
         return ''
 
-def do_read_r35c(scanner,device):
-    print("__________do_read_r35c________________")
-    global _device 
-    global _scanner
-    _device = device
-    _scanner = scanner
-
-    com_error = 0
+def do_read_r35c():
     while True:
         print("__________do_read_r35c________________")
         uid = get_event()

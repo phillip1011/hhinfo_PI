@@ -14,15 +14,13 @@ from datetime import datetime
 from time import sleep
 import serial
 import struct
+import globals
 
 print("____________api.py run______________________")
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
 app.config['LIVESERVER_TIMEOUT'] = 2
-#controlip="127.0.0.1"
-# port = 80
-#_server.token=b'http://www.hhinfo.com.tw/'
-#serverip="127.0.0.1"
+
 
 
 
@@ -49,21 +47,21 @@ def checkserverip(request):
 
 
 def verifyToken(receiveToken):
-    allowToken = _server.token
+    allowToken = globals._server.token
     if receiveToken != allowToken:
         print('receiveToken :' + receiveToken + ' != allowToken : '+allowToken)
         return False
     return True
 
 def verifyServerIp(reviceServerIp):
-    allowServerIp = _server.serverip
+    allowServerIp = globals._server.serverip
     if reviceServerIp != allowServerIp:
         print('verifyServerIp - receiveIP : '+str(reviceServerIp) +' != allowIP : '+str(allowServerIp))
         return False
     return True
 
 def ar721action(gateno,dooropentime):
-    ser = serial.Serial(_scanner.sname, _scanner.baurate, timeout=1)
+    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
     AR721R1ON=ar721comm(1,'0x21','0x82')   #door relay on
     AR721R1OFF=ar721comm(1,'0x21','0x83')  #door relay off
     AR721R2ON=ar721comm(1,'0x21','0x85')   #alarm relay on
@@ -126,12 +124,12 @@ def api01():
             #nodeName = revice_data["relay"][value]["nodeName"]
             if isinstance(gateno,int) and isinstance(opentime,int) and isinstance(waittime,int):
                 node=1
-                if _device.doortype=='一般':   #設定一般門和鐵卷門開啟時間
+                if globals._device.doortype=='一般':   #設定一般門和鐵卷門開啟時間
                     dooropentime=5
                 else:
                     dooropentime=2
 
-                if (gateno == 1 or gateno ==2) and _scanner.name == 'AR721':
+                if (gateno == 1 or gateno ==2) and globals._scanner.name == 'AR721':
 
                     t = threading.Thread(target=ar721action, args=(gateno,dooropentime,))
                     t.start()
@@ -140,7 +138,7 @@ def api01():
             else: 
                 status_code = 204
 
-        rc2 = {"controlip": _device.localip}
+        rc2 = {"controlip": globals._device.localip}
         i = 1
         relay_status = {}
         for rx in relay.relaystatus:
@@ -176,7 +174,7 @@ def api01A(id):
         return status_code
         
     if request.method == "GET":      
-        rc2 = {"controlip": _device.localip}
+        rc2 = {"controlip": globals._device.localip}
         relay_status = {}
         temp = {str(id) : str(relay.relaystatus[id])}
         relay_status.update(temp)
@@ -196,7 +194,7 @@ def api01B(id):
         return status_code
         
     if request.method == "GET":       
-        rc2 = {"controlip": _device.localip}
+        rc2 = {"controlip": globals._device.localip}
         sensor = relay.read_sensor()
         sensor_status = {}
         temp = {str(id) : str(sensor[id])}
@@ -245,9 +243,9 @@ def api02():
         update_time.update()
         #update_time.update2(revice_data)
         status_code = flask.Response(status=203)
-        if _scanner.name=="AR721":
+        if globals._scanner.name=="AR721":
             node=1
-            ser = serial.Serial(_scanner.sname, _scanner.baurate, timeout=1)
+            ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
             sysyy=int(datetime.now().strftime('%y'))
             sysmm=int(datetime.now().strftime('%m'))
             sysdd=int(datetime.now().strftime('%d'))
@@ -271,7 +269,7 @@ def api02():
             # print(input)
             ser.write(input)
             sleep(0.2)
-            print(_scanner.name,"node=",node, "校時完成")
+            print(globals._scanner.name,"node=",node, "校時完成")
 
         return status_code
 
@@ -395,6 +393,9 @@ def apiDeviceDate():
     conn.commit()
     conn.close()
     status_code = flask.Response(status=203)
+
+    globals.initialize() 
+
     return status_code
   
 
@@ -455,13 +456,13 @@ def apiopenword():
         bytes([xor])+ 
         bytes([sum])
     )
-    ser = serial.Serial(_scanner.sname, _scanner.baurate, timeout=1)
+    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
     ser.write(comm)
     sleep(0.2)
 
     status_code = flask.Response(status=203)
     return status_code
 def run():
-    _device.show()
-    print("____API run_____port : "+str(_device.localport))
-    app.run(debug=False, use_reloader=False, threaded=False, host="0.0.0.0", port=_device.localport)
+    globals._device.show()
+    print("____API run_____port : "+str(globals._device.localport))
+    app.run(debug=False, use_reloader=False, threaded=False, host="0.0.0.0", port=globals._device.localport)

@@ -12,44 +12,31 @@ import WebApiClient.remote as remote
 
 import models.r35c as r35c
 import models.ar721 as ar721
-
-from models.DeviceModel import DeviceModel
-from models.ServerModel import ServerModel
-from models.ScannerModel import ScannerModel
-
+import globals 
 
 GPIO.setwarnings(False)
-global uid
 
-def initServer():
-    global _server
-    _server = ServerModel()
-  
+
+def initGlobals():
+    globals.initialize() 
+
 
 def initRelay():
     relay.setup()
     relay.start_relay()
 
-def initScanner():
-    global _scanner
-    _scanner = ScannerModel()
 
-def initDevice():
-    global _device
-    _device = DeviceModel()
+
     
 
 if __name__=='__main__':
     #loop for change relay off
-    initDevice()
-    initServer()
+    initGlobals()
     initRelay()
-    initScanner()
+
 
   
-    print(_server)
-    print(_device)
-    print(_scanner)
+   
     #loop for checking internet every 1 min
     # netstatus=1   # 0表示boot時, 1表示每X分鐘檢查
     # t2 = threading.Thread(target=login_internet.main, args=(serverip, VPNserverip,netstatus))
@@ -62,38 +49,31 @@ if __name__=='__main__':
    
 
     #
-    if _scanner.name == 'AR721':
+    if globals._scanner.name == 'AR721':
         print('Start thread AR721')
-        t = threading.Thread(target=ar721.do_read_ar721, args=(_scanner,_device))
+        t = threading.Thread(target=ar721.do_read_ar721)
         t.setDaemon(True)
         t.start()
     else:
         print('Start thread R35C')
-        t = threading.Thread(target=r35c.do_read_r35c, args=(_scanner,_device))
+        t = threading.Thread(target=r35c.do_read_r35c)
         t.setDaemon(True)
         t.start()
     
  
 
    
-    #loop for report every 3 min
-    remote._server = _server
-    remote._device = _device
-    remote._scanner = _scanner
-    
-
-    t3 = threading.Thread(target=remote.report, args=(_server,_device))
+    #loop for report
+    t3 = threading.Thread(target=remote.report)
     t3.setDaemon(True)
     t3.start()
 
-    #loop for sensor change every 0.1 sec
-    t4 = threading.Thread(target=remote.monitor_sensor, args=(_server,_device))
+    #loop for sensor change
+    t4 = threading.Thread(target=remote.monitor_sensor)
     t4.setDaemon(True)
     t4.start()
 
     #start API flask
     
-    api._server = _server
-    api._device = _device
-    api._scanner = _scanner
+   
     api.run()

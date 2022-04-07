@@ -5,6 +5,8 @@ import WebApiClient.remote as remote
 from time import sleep
 import serial
 from upload import uploadlog
+import globals 
+
 def ar721comm(node,func,data):
     xor=255^node^int(func,16)^int(data,16)
     sum=node+int(func,16)+int(data,16)+xor
@@ -57,11 +59,12 @@ def ar721comm(node,func,data):
 
 
 
-def chkcard(uid,scanner,device):
+def chkcard(uid):
     print("____________chkcard_run__________________")
+    print("門類型 : "+globals._device.doortype)
     # verifyopen(uid)
     node = 1
-    if device.doortype=='一般':   #設定一般門和鐵卷門開啟時間
+    if globals._device.doortype=='一般':   #設定一般門和鐵卷門開啟時間
         dooropentime=5
     else:
         dooropentime=2
@@ -91,7 +94,7 @@ def chkcard(uid,scanner,device):
     else:
         range_id=str(time[0:2])+':00'
         print('系統時段=',range_id)
-    ser = serial.Serial(scanner.sname, scanner.baurate, timeout=1)
+    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
     c.execute('select * from cards where card_uuid=?' ,(uid,)) #找尋資料庫中, 是否有合法之卡號
     i=0
     for row in c: #資料庫筆數如果為0則表示無此卡號
@@ -117,7 +120,7 @@ def chkcard(uid,scanner,device):
                 if sensor0==1:  #S0=1 表示門狀態是關閉
                     process="全區卡-開門"
                     result="1"
-                    if scanner.name=="AR721":
+                    if globals._scanner.name=="AR721":
                         ser.write(AR721R1ON)
                         sleep(dooropentime)
                         ser.write(AR721R1OFF)
@@ -138,9 +141,9 @@ def chkcard(uid,scanner,device):
                         print("開AC")
                         relay.action(4,255,0)
                 else:   #門狀態是開啟
-                    if device.doortype=='鐵卷門':
+                    if globals._device.doortype=='鐵卷門':
                         process="全區卡-關門"
-                        if scanner.name=="AR721":
+                        if globals._scanner.name=="AR721":
                             ser.write(AR721R2ON)
                             sleep(dooropentime)
                             ser.write(AR721R2OFF)
@@ -152,7 +155,7 @@ def chkcard(uid,scanner,device):
         if process=="":
             print('一般卡')
             process="非預約時段"
-            if device.doortype=='一般':   #一般租借-一般門
+            if globals._device.doortype=='一般':   #一般租借-一般門
                 c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
                 i=0
                 for row in c: #找尋booking_customers資料庫中, 是否有此客戶
@@ -171,7 +174,7 @@ def chkcard(uid,scanner,device):
                             if xx>=1:
                                 process="租借時段-開門"
                                 result="1"
-                                if scanner.name=="AR721":
+                                if globals._scanner.name=="AR721":
                                     ser.write(AR721R1ON)
                                     sleep(dooropentime)
                                     ser.write(AR721R1OFF)
@@ -204,7 +207,7 @@ def chkcard(uid,scanner,device):
                                 if xx>=1:
                                     process="租借時段-開門"
                                     result="1"
-                                    if scanner.name=="AR721":
+                                    if globals._scanner.name=="AR721":
                                         ser.write(AR721R1ON)
                                         sleep(dooropentime)
                                         ser.write(AR721R1OFF)
@@ -224,7 +227,7 @@ def chkcard(uid,scanner,device):
                         i+=1
                         print('booking_id:第'+str(i)+'筆'+row[1])
                         if i>=1:
-                            if scanner.name=="AR721":
+                            if globals._scanner.name=="AR721":
                                 ser.write(AR721R2ON)
                                 sleep(dooropentime)
                                 ser.write(AR721R2OFF)
