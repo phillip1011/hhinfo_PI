@@ -84,11 +84,10 @@ def get_event():
 
 def do_read_r35c():
     while True:
-        print("__________do_read_r35c________________")
         uid = get_event()
         if uid != '' :
             callback(uid)
-        sleep(0.2)
+        # sleep(0.2)
 
 
 
