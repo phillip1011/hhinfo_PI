@@ -10,7 +10,6 @@ class ScannerModel:
     
   
     def __init__(self):
-        print("_________ScannerModel run________init_________")
         cf = configparser.ConfigParser()
         cf.read("config.ini")
         self.sname = cf.get("ScannerConfig", "sname")
@@ -25,10 +24,12 @@ class ScannerModel:
             self.name="AR721"
         else:
             self.name="R35C"
-           
+        self.show()
     
     def show(self):
-        print("ScannerModel show")
+        print("__________ScannerModel show__________")
         print("name = " + self.name)
+        print("sname = " + self.sname)
+        print("baurate = " + self.baurate)
       
         

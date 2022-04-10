@@ -3,28 +3,21 @@ import requests
 import datetime
 import WebApiClient.login_internet as login_internet 
 import WebApiClient.update_time as update_time
-import netifaces as ni
 import sqlite3
-from models.ServerModel import ServerModel
 import configparser
+import globals
+import subprocess
 
-def initServer():
-    global _server
-    _server = ServerModel() 
+def initGlobals():
+    globals.initialize() 
 
-def initDefaultDevice():
-    global _defaultip
-    global _defaultport
-    cf = configparser.ConfigParser()
-    cf.read("config.ini")
-    _defaultip = cf.get("DeviceConfig", "defaultip")
-    _defaultport = cf.get("DeviceConfig", "defaultport")
+ 
 
 
 def updatetime():
     path = '/api/v1/data/time'
     headers = {'Content-Type': 'application/json'}
-    api_url_base = "http://" + _server.serverip + ":" + str(_server.serverport) + path
+    api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) + path
     response = requests.get(api_url_base) 
     print(response) 
     r = response.json()
@@ -43,9 +36,9 @@ def updatetime():
     update_time.update()
 def updatedevice():
     path = '/api/v1/data/device'
-    request_string = "ip="+_defaultip +':'+str(_defaultport)
+    request_string = "ip="+globals._device.localip +':'+str(globals._device.localport)
     headers = {'Content-Type': 'application/json'}
-    api_url_base = "http://" + _server.serverip + ":" + str(_server.serverport) + path
+    api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) + path
     print (api_url_base,request_string)
     response = requests.get(api_url_base,params=request_string, headers=headers) 
 
@@ -54,9 +47,11 @@ def updatedevice():
         r = response.json()
         revice_data = r['data']
         print(revice_data)
+        if revice_data == None:
+            print('無法從伺服器取得Device資料,localip不符')
+            return 0
         conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
         c=conn.cursor()
-        c.execute('CREATE TABLE IF NOT EXISTS device(id TEXT,ip TEXT,local_ip TEXT,ip_mode TEXT,family TEXT,name TEXT,description TEXT,group_id TEXT,mode TEXT,style TEXT,type TEXT,is_booking TEXT,status TEXT,kernel TEXT)')
         c.execute('DELETE FROM device')
         c.execute("INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
             revice_data["id"],
@@ -83,16 +78,23 @@ def updatedevice():
 
 if __name__=='__main__':
    
-    initDefaultDevice()
-    initServer()
+    cf = configparser.ConfigParser()
+    cf.read("config.ini")
+    
+    serverip = cf.get("ServerConfig", "serverip")
+    VPNserverip = cf.get("ServerConfig", "VPNserverip")
+    forceVPN = cf.get("ServerConfig", "forceVPN")
+    print(forceVPN)
+    netstatus=0
+    if forceVPN == 'true':
+        print('強制啟用VPN')
+        login_internet.main(serverip,VPNserverip,netstatus)
+    
+    initGlobals()
     updatetime()
     updatedevice()
     
-    #暫時不要登入VPN, 因測試機在外部, 否則會錯誤
-    # serverip ="35.221.198.141"
-    # VPNserverip="10.8.0.1"
-    # netstatus=0
-    # login_internet.main(serverip, VPNserverip,netstatus)
+
 
     
 

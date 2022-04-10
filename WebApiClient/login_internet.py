@@ -4,6 +4,7 @@ import pysftp
 from datetime import datetime
 from time import sleep
 
+
 def get_ovpn_file(sHostName,vpnfile):
     with pysftp.Connection(host=sHostName , username='ovpn', private_key="/home/ubuntu/hhinfo_PI/id_rsa") as sftp:
         # 檔案下載 sftp.get('遠端檔案位置', '本機檔案位置')
@@ -27,7 +28,7 @@ def pingVPNServer(VPNserverip):
 def main(serverip,VPNserverip,netstatus):
     # print(serverip)
     # print(VPNserverip)
-    while True:
+    # while True:
         if pingServer(serverip) ==0:    #PING WEB SRV
             #wlog("PING "+serverip+" WEB主機回應成功","w+")
             print("PING "+serverip+" WEB主機回應成功")
@@ -68,14 +69,13 @@ def main(serverip,VPNserverip,netstatus):
     
 def wlog(msg,fnc):
     #將結果寫到start_log.txt
+    print(msg)
     timenow =str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     text_file = open("/home/ubuntu/hhinfo_PI/start_log.txt", fnc)
     text_file.write(timenow+" "+msg+'\n')
     text_file.close()
 
-if __name__=='__main__':
-    serverip= "35.221.198.141"
-    VPNserverip = "10.8.0.1"    
-    netstatus=1
-    #sleep(1)
-    main(serverip,VPNserverip,netstatus)
+
+
+
+   

@@ -59,6 +59,19 @@ def read_sensor():
     #print("")
     return xx
 
+
+def read_relay():
+    xx = []
+    for i in range(4):
+        x = GPIO.input(LED_PIN[i])
+        #print(x, end="")
+        if(x == 1):
+            xx.append(0)
+        else: 
+            xx.append(1)
+    #print("")
+    return xx 
+
 def do_action(gateno,opentime,waittime):
     if (gateno == 0 ):
         return 

@@ -141,7 +141,7 @@ def api01():
         rc2 = {"controlip": globals._device.localip}
         i = 1
         relay_status = {}
-        for rx in relay.relaystatus:
+        for rx in relay.read_relay():
             temp = {str(i) : str(rx)}
             relay_status.update(temp)
             i = i + 1
@@ -176,7 +176,7 @@ def api01A(id):
     if request.method == "GET":      
         rc2 = {"controlip": globals._device.localip}
         relay_status = {}
-        temp = {str(id) : str(relay.relaystatus[id])}
+        temp = {str(id) : str(relay.read_relay()[id])}
         relay_status.update(temp)
         rc2.update({"relay": relay_status})
         response = app.response_class(
@@ -463,6 +463,5 @@ def apiopenword():
     status_code = flask.Response(status=203)
     return status_code
 def run():
-    globals._device.show()
     print("____API run_____port : "+str(globals._device.localport))
     app.run(debug=False, use_reloader=False, threaded=False, host="0.0.0.0", port=globals._device.localport)

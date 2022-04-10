@@ -1,11 +1,29 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 import models.relay as relay
 import WebApiClient.remote as remote
 from time import sleep
 import serial
 from upload import uploadlog
 import globals 
+
+
+
+
+def initData():
+    global _today
+    global _range_id
+    global _time
+    _today=str(datetime.now().strftime('%Y-%m-%d'))
+    _time=str(datetime.now().strftime('%H:%M:%S'))
+    if int(_time[3:5])>=30:
+        _range_id=str(_time[0:2])+':30'
+    else:
+        _range_id=str(_time[0:2])+':00'
+
+
+def initGlobals():
+    globals.initialize() 
 
 def ar721comm(node,func,data):
     xor=255^node^int(func,16)^int(data,16)
@@ -20,235 +38,171 @@ def ar721comm(node,func,data):
 
 
 
-# def verifyopen(uid):
-#     #先判斷card 是否存在
-#     conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
-#     c=conn.cursor()
-#     c.execute('select * from cards where card_uuid=?' ,(uid,)) #找尋資料庫中, 是否有合法之卡號
-#     card = c.fetchone()
-#     if card == None:
-#         print('_____找不到card 回傳 False_________')
-#         return False
-#     #判斷全區卡
-#     c.execute('select * from spcards where customer_id=?' ,(card[1],))
-#     spcard = c.fetchone()
-#     if spcard != None:
-#         print('_____找到spcard 回傳 True_________')
-#         return True
-#     else:
-#         #判斷預約
-#         today=str(datetime.now().strftime('%Y-%m-%d'))
-#         time=str(datetime.now().strftime('%H:%M:%S'))
-#         #10:15:08 (HH:MM:SS)
-#         if int(time[3:5])>=30:
-#             range_id=str(time[0:2])+':30'
-#         else:
-#             range_id=str(time[0:2])+':00'
-#         print('_____43_________')
-#         c.execute(
-#                 'select * '
-#                 'from booking_customers as bc '
-#                 'join booking_histories as bh '
-#                 'on bc.booking_id = bh.id '
-#                 'where bc.customer_id = ? and bh.date = ? and bh.range_id = ?',
-#                     (row[1],today,range_id,))
-#         gg =  c.fetchone()
-#         print(gg)
-     
+def getCardByUid(uid):
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute('select * from cards where card_uuid=?' ,(uid,)) #找尋資料庫中, 是否有合法之卡號
+    card = c.fetchone()
+    conn.close()
+    return card
+  
+def getSpcardByCustomerId(customer_id):
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute('select * from spcards where customer_id=?' ,(customer_id,))
+    spcard = c.fetchone()
+    conn.close()
+    return spcard
+
+def getNowBookingDataByCustomerId(customer_id):
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute(
+        'select bh.* '
+        'from booking_customers as bc '
+        'join booking_histories as bh '
+        'on bc.booking_id = bh.id '
+        'where bc.customer_id = ? and bh.date = ? and bh.range_id = ?',
+        (
+            customer_id,
+            _today,
+            _range_id,
+        )
+    )
+
+    spcard = c.fetchone()
+    conn.close()
+    return spcard
+
+def actionDoor(uid,userMode):
+    sxstatus = relay.read_sensor()
+    #S1=1 => 門狀態是關閉
+    #S1=0 => 門狀態是開啟
+    s1=sxstatus[0]
+    # s1=1
+    print('s1 status =',s1)
+    if s1==1:
+        # 開門
+        openDoor()
+        log(uid,'合法卡',userMode+'-開門',1)
+    else:
+        # 關門
+        if globals._device.doortype=='鐵捲門':
+            closeDoor()
+            log(uid,'合法卡',userMode+'-關門',1)
+
+
+def openDoor():
+    print('openDoor')
+    if globals._scanner.name=="AR721":
+        AR721_R1_ON=ar721comm(1,'0x21','0x82')   #door relay on
+        AR721_R1_OFF=ar721comm(1,'0x21','0x83')  #door relay off
+        ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+        ser.write(AR721_R1_ON)
+        sleep(globals._device.opendoortime)
+        ser.write(AR721_R1_OFF)
+    else:
+        relay.action(1,globals._device.opendoortime,0)
+    
+
+
+def closeDoor():
+    print('closeDoor')
+    if globals._scanner.name=="AR721":
+
+        AR721_R2_ON=ar721comm(1,'0x21','0x85')   #alarm relay on
+        AR721_R2_OFF=ar721comm(1,'0x21','0x86')  #alarm relay off
+        ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+        ser.write(AR721_R2_ON)
+        sleep(globals._device.opendoortime)
+        ser.write(AR721_R2_OFF)
+    else:
+        relay.action(2,globals._device.opendoortime,0)
+
+
+def actionRelay(relayNo):
+    sxstatus = relay.read_sensor()
+    #S1=1 => 門狀態是關閉
+    #S1=0 => 門狀態是開啟
+    s1=sxstatus[0]
+    # s1=1
+    if s1==1:
+        # 開門
+        openRelay(relayNo)
+    else:
+        # 關門
+        if globals._device.doortype=='鐵捲門':
+            closeRelay(relayNo)
+
+def openRelay(relayNo):
+    print('openRelay : ',relayNo)
+    relay.action(relayNo,255,0)
+
+def closeRelay(relayNo):
+    print('closeRelay : ',relayNo)
+    relay.action(relayNo,0,0)
+    
+
+def log(uid,auth,process,result):
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute("INSERT INTO scanlog VALUES(?,?,?,0,?,?,?)", (uid,_today,_time,auth,process,result))
+    conn.commit()
+    conn.close()
+    uploadlog()
+
     
 
 
 
 def chkcard(uid):
     print("____________chkcard_run__________________")
-    print("門類型 : "+globals._device.doortype)
-    # verifyopen(uid)
-    node = 1
-    if globals._device.doortype=='一般':   #設定一般門和鐵卷門開啟時間
-        dooropentime=5
-    else:
-        dooropentime=2
-    #relay.setup()
-    #開啟資料庫連線
-    # print('door_dev=',door_dev)
-    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
-    c=conn.cursor()
-    c2=conn.cursor()
-    c1=conn.cursor()
+   
 
-    c.execute('CREATE TABLE IF NOT EXISTS cards(id TEXT,customer_id TEXT,card_uuid TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS booking_customers(id TEXT,booking_id TEXT,customer_id TEXT,source TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS booking_histories(id TEXT,deviceid TEXT,date TEXT,range_id TEXT,aircontrol TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS scanlog(cardnbr TEXT,date TEXT,time TEXT,rtnflag TEXT,auth TEXT,process TEXT,result TEXT)')    
+    # initData
+    initData()
+    # initGlobals()
+
+
+
+    #取得Card資料
+    card = getCardByUid(uid)
+    if card == None:
+        print('找不到Card資料 => 非法卡')
+        log(uid,'非法卡','禁止進入',0)
+        return 0
+
+
     
-    auth=""
-    process=""
-    result="0"
+    #取得Spcard資料
+    spcard = getSpcardByCustomerId(card[1])
 
-    today=str(datetime.now().strftime('%Y-%m-%d'))
-    time=str(datetime.now().strftime('%H:%M:%S'))
-    #10:15:08 (HH:MM:SS)
-    if int(time[3:5])>=30:
-        range_id=str(time[0:2])+':30'
-        print('系統時段=',range_id)
+    if spcard == None :
+        print('找不到Spcard資料 => 找尋預約紀錄')
+        #判斷預約紀錄
+        nowBookingData = getNowBookingDataByCustomerId(card[1])
+        if nowBookingData == None:
+            print('找不到預約紀錄 => 不開門')
+            log(uid,'合法卡','非預約時段',0)
+            return 0
+        actionDoor(uid,'租借時段')
+        actionRelay(3)
+        aircontrol = nowBookingData[4]
+        if aircontrol == '1':
+            actionRelay(4)
     else:
-        range_id=str(time[0:2])+':00'
-        print('系統時段=',range_id)
-    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-    c.execute('select * from cards where card_uuid=?' ,(uid,)) #找尋資料庫中, 是否有合法之卡號
-    i=0
-    for row in c: #資料庫筆數如果為0則表示無此卡號
-        i+=1
-    if i>=1:
-        auth="合法卡"
-        
-        AR721R1ON=ar721comm(node,'0x21','0x82')   #door relay on
-        AR721R1OFF=ar721comm(node,'0x21','0x83')  #door relay off
-        AR721R2ON=ar721comm(node,'0x21','0x85')   #alarm relay on
-        AR721R2OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
-        # print("合法卡號")
-        # print('customers_id是'+row[1])
-        sxstatus = relay.read_sensor()
-        sensor0=sxstatus[0]
-
-        c2.execute('select * from spcards where customer_id=?' ,(row[1],))
-        i=0
-        for row2 in c2:
-            i+=1
-            if i>=1:
-                spauth=row2[1]
-                if sensor0==1:  #S0=1 表示門狀態是關閉
-                    process="全區卡-開門"
-                    result="1"
-                    if globals._scanner.name=="AR721":
-                        ser.write(AR721R1ON)
-                        sleep(dooropentime)
-                        ser.write(AR721R1OFF)
-                    else:
-                        relay.action(1,dooropentime,0)
-                    spauth=row2[2]
-                    # print(spauth)
-                    if spauth=="":
-                        print("無其他授權")
-                    elif spauth=="3,4":
-                        print("開燈開AC")
-                        relay.action(3,255,0)
-                        relay.action(4,255,0)
-                    elif spauth[0]==str(3):
-                        print("開燈")
-                        relay.action(3,255,0)
-                    elif spauth[0]==str(4):
-                        print("開AC")
-                        relay.action(4,255,0)
-                else:   #門狀態是開啟
-                    if globals._device.doortype=='鐵卷門':
-                        process="全區卡-關門"
-                        if globals._scanner.name=="AR721":
-                            ser.write(AR721R2ON)
-                            sleep(dooropentime)
-                            ser.write(AR721R2OFF)
-                        else:
-                            relay.action(2,dooropentime,0)
-                        relay.action(3,0,0)
-                        relay.action(4,0,0)
-                break
-        if process=="":
-            print('一般卡')
-            process="非預約時段"
-            if globals._device.doortype=='一般':   #一般租借-一般門
-                c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
-                i=0
-                for row in c: #找尋booking_customers資料庫中, 是否有此客戶
-                    i+=1
-                    print('booking_id:第'+str(i)+'筆'+row[1])
-                    if i>=1:
-                        # print("test")
-                        # print(row[1])
-                        # print(today)
-                        # print(range_id)
-                        c1.execute('select * from booking_histories where id=? and date=? and range_id=?' ,(row[1],today,range_id,))
-                        xx=0
-                        for row1 in c1: #找尋booking_histories資料庫中, 是否有此客戶的預約
-                            print(row1[0])
-                            xx+=1
-                            if xx>=1:
-                                process="租借時段-開門"
-                                result="1"
-                                if globals._scanner.name=="AR721":
-                                    ser.write(AR721R1ON)
-                                    sleep(dooropentime)
-                                    ser.write(AR721R1OFF)
-                                else:
-                                    relay.action(1,dooropentime,0)
-                                if row[3]=='normal':
-                                    relay.action(3,255,0)
-                                    if row1[4] == '1':
-                                        relay.action(4,255,0)
-                                    else:
-                                        relay.action(4,0,0)
-
-            else:   #一般租借-鐵卷門
-                if sensor0==1:  #S0=1 表示門狀態是關閉
-                    c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
-                    i=0
-                    for row in c: #找尋booking_customers資料庫中, 是否有此客戶
-                        i+=1
-                        print('booking_id:第'+str(i)+'筆'+row[1])
-                        if i>=1:
-                            # print("test")
-                            # print(row[1])
-                            # print(today)
-                            # print(range_id)
-                            c1.execute('select * from booking_histories where id=? and date=? and range_id=?' ,(row[1],today,range_id,))
-                            xx=0
-                            for row1 in c1: #找尋booking_histories資料庫中, 是否有此客戶的預約
-                                print(row1[0])
-                                xx+=1
-                                if xx>=1:
-                                    process="租借時段-開門"
-                                    result="1"
-                                    if globals._scanner.name=="AR721":
-                                        ser.write(AR721R1ON)
-                                        sleep(dooropentime)
-                                        ser.write(AR721R1OFF)
-                                    else:
-                                        relay.action(1,dooropentime,0)
-                                    
-                                    if row[3]=='normal':
-                                        relay.action(3,255,0)
-                                        if row1[4] == '1':
-                                            relay.action(4,255,0)
-                                        else:
-                                            relay.action(4,0,0)
-                else:  #S0=0 表示門狀態是開啟
-                    c.execute('select * from booking_customers where customer_id=?' ,(row[1],))
-                    i=0
-                    for row in c: #找尋booking_customers資料庫中, 是否有此客戶
-                        i+=1
-                        print('booking_id:第'+str(i)+'筆'+row[1])
-                        if i>=1:
-                            if globals._scanner.name=="AR721":
-                                ser.write(AR721R2ON)
-                                sleep(dooropentime)
-                                ser.write(AR721R2OFF)
-                            else:
-                                relay.action(2,dooropentime,0)
-                            relay.action(3,0,0)
-                            relay.action(4,0,0)                            
+        actionDoor(uid,'全區卡')
+        authority = spcard[2]
+        if len(authority) > 0:
+            authority_split = authority.split(',')
+            for authority_relay in authority_split:
+                actionRelay(int(authority_relay))
+    
+    
 
 
-    else:
-        auth="非法卡"
-        process="禁止進入"
-
-
-    c.execute("INSERT INTO scanlog VALUES(?,?,?,0,?,?,?)", (uid,today,time,auth,process,result))
-    conn.commit()
-    conn.close()
-    ser.close
-    uploadlog()
-if __name__=='__main__':
-    uid='4077189990'
-    #uid='1234567890'
-    door_dev="AR721"
-    chkcard(uid,door_dev,sname,baurate)
+# if __name__=='__main__':
+    # uid='4077189990'
+    # uid='1479304897'
+    # # uid='1111000125'
+    # chkcard(uid)

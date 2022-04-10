@@ -1,16 +1,13 @@
 import json
 import requests
 import sqlite3
-#os.system("sudo killall openvpn")
+import globals
 
-serverip = "114.35.246.115"
-port = 8080
 
 def uploadlog():
-    ip = '10.8.1.151:4661'   #controlip
-    path = '/api/v1/data/log'
     headers = {'Content-Type': 'application/json'}
-    api_url_base = "http://" + serverip + ":" + str(port) + path
+    path = '/api/v1/data/log'
+    api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) + path
    
     data = []
     cnt=0
@@ -30,7 +27,7 @@ def uploadlog():
         cnt+=1
         # print(temp_obj)        
     postdata = {
-        'ip' : ip,
+        'ip' : globals._device.localip+ ":" + str(globals._device.localport),
         'data' :data
     }
 

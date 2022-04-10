@@ -26,14 +26,6 @@ def write_command_to_node(func):
     sleep(0.2)
     
 def do_read_ar721():
-    print("__________do_read_ar721________________")
-    print("__________scanner________________")
-    print(globals._scanner)
-    print("__________device_________________")
-    print(globals._device)
-    
-   
-
     ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
     ser.flushInput()  # flush input buffer
     ser.flushOutput()  # flush output buffer
