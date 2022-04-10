@@ -34,14 +34,7 @@ def apitest():
     print("revice data")
     return 0
 
-def checkserverip(request):
-    try:     
-        if request.form['serverip'] != serverip :
-            status_code = flask.Response(status=401)
-            return status_code
-    except:
-        status_code = flask.Response(status=401)
-        return status_code
+
 
 
 
@@ -55,6 +48,9 @@ def verifyToken(receiveToken):
 
 def verifyServerIp(reviceServerIp):
     allowServerIp = globals._server.serverip
+    if(globals._server.verifyserverip == 'false')
+        return True
+
     if reviceServerIp != allowServerIp:
         print('verifyServerIp - receiveIP : '+str(reviceServerIp) +' != allowIP : '+str(allowServerIp))
         return False
