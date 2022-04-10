@@ -27,7 +27,11 @@ class DeviceModel:
         serverip =  cf.get("ServerConfig", "serverip")
 
         if data == None:
-            self.localip = self.getLocalipByServer(serverip)
+            forceLocalIp =  cf.get("DeviceConfig", "forceLocalIp")
+            if forceLocalIp == 'true' :
+                self.localip = cf.get("DeviceConfig", "defaultip")
+            else :
+                self.localip = self.getLocalipByServer(serverip)
         else :
             self.name = data[5]
             self.family = data[6]
