@@ -14,7 +14,7 @@ def callback(uid):
     print('-----getcallback-------'+str(uid))
     if uid != '' :
         uid =str(uid).zfill(10)
-        chkcard.chkcard(uid,_scanner,_device)
+        chkcard.chkcard(uid)
         remote.scode()
     else:
         print("read nfc error")
@@ -44,7 +44,7 @@ def getdata():
     # 清空 READ BUFFER
     output=''
     try:
-        ser = serial.Serial(_scanner.sname, 9600, timeout=1)
+        ser = serial.Serial(globals._scanner.sname,globals._scanner.baurate, timeout=1)
         output = ser.readline()
     except:
         print("error")

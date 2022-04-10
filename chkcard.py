@@ -70,9 +70,30 @@ def getNowBookingDataByCustomerId(customer_id):
         )
     )
 
-    spcard = c.fetchone()
+    nowBookingData = c.fetchone()
     conn.close()
-    return spcard
+    return nowBookingData
+
+def getOverTimeBookingDataByCustomerId(customer_id):
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute(
+        'select bh.* '
+        'from booking_customers as bc '
+        'join booking_histories as bh '
+        'on bc.booking_id = bh.id '
+        'where bc.customer_id = ? and bh.date = ? and bh.range_id < ?',
+        (
+            customer_id,
+            _today,
+            _range_id,
+        )
+    )
+
+    overTimeBookingData = c.fetchone()
+    conn.close()
+    return overTimeBookingData
+
 
 def actionDoor(uid,userMode):
     sxstatus = relay.read_sensor()
@@ -182,9 +203,17 @@ def chkcard(uid):
         #判斷預約紀錄
         nowBookingData = getNowBookingDataByCustomerId(card[1])
         if nowBookingData == None:
-            print('找不到預約紀錄 => 不開門')
-            log(uid,'合法卡','非預約時段',0)
+            print('找不到預約紀錄 => 不開門 , 找尋超時紀錄')
+            overTimeBookingData = getOverTimeBookingDataByCustomerId(card[1])
+            if overTimeBookingData == None :
+                print('找不到超時預約紀錄 => 不關門')
+                log(uid,'合法卡','非預約時段',0)
+            else:
+                print('找到超時預約紀錄 => 關門')
+                closeDoor()
+                log(uid,'合法卡','超時關門',1)
             return 0
+
         actionDoor(uid,'租借時段')
         actionRelay(3)
         aircontrol = nowBookingData[4]
