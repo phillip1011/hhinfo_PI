@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import json
 import requests
 import datetime
@@ -79,7 +80,7 @@ def updatedevice():
 if __name__=='__main__':
    
     cf = configparser.ConfigParser()
-    cf.read("config.ini")
+    cf.read("/home/ubuntu/hhinfo_PI/config.ini")
     
     serverip = cf.get("ServerConfig", "serverip")
     VPNserverip = cf.get("ServerConfig", "VPNserverip")

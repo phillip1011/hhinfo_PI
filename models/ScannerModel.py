@@ -11,7 +11,7 @@ class ScannerModel:
   
     def __init__(self):
         cf = configparser.ConfigParser()
-        cf.read("config.ini")
+        cf.read("/home/ubuntu/hhinfo_PI/config.ini")
         self.sname = cf.get("ScannerConfig", "sname")
         self.baurate = cf.get("ScannerConfig", "baurate")
         ser = serial.Serial(self.sname, self.baurate, timeout=1)

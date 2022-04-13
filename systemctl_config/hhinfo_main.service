@@ -1,0 +1,12 @@
+[Unit]
+Description=HHinfo Main Service
+
+
+[Service]
+Type=simple
+ExecStart=/home/ubuntu/hhinfo_PI/main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

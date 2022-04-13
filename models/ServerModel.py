@@ -11,7 +11,7 @@ class ServerModel:
     
     def __init__(self):
         cf = configparser.ConfigParser()
-        cf.read("config.ini")
+        cf.read("/home/ubuntu/hhinfo_PI/config.ini")
         self.token = cf.get("ServerConfig", "token")
         self.token_key = cf.get("ServerConfig", "token_key")
         self.serverip = cf.get("ServerConfig", "serverip")

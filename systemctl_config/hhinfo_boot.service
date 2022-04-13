@@ -1,0 +1,13 @@
+[Unit]
+Description=HHinfo boot Service
+
+
+[Service]
+Type=simple
+ExecStart=/home/ubuntu/hhinfo_PI/bootAPI.py
+Restart=no
+RestartSec=5
+
+
+[Install]
+WantedBy=multi-user.target

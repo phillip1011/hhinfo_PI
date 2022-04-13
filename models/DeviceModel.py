@@ -22,7 +22,7 @@ class DeviceModel:
 
 
         cf = configparser.ConfigParser()
-        cf.read("config.ini")
+        cf.read("/home/ubuntu/hhinfo_PI/config.ini")
         self.localport = cf.get("DeviceConfig", "defaultport")
         serverip =  cf.get("ServerConfig", "serverip")
 
