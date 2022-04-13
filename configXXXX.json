@@ -1,8 +1,0 @@
-{
-  "serverip" : "10.8.0.1",
-  "checkip" :  "114.35.246.11",
-  "clientip" : "10.8.1.10",
-  "block" : 1,
-  "serverport" : 80,
-  "localport": 4661
-}
