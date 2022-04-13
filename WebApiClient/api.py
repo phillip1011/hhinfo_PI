@@ -48,7 +48,7 @@ def verifyToken(receiveToken):
 
 def verifyServerIp(reviceServerIp):
     allowServerIp = globals._server.serverip
-    if(globals._server.verifyserverip == 'false')
+    if globals._server.verifyserverip == 'false' :
         return True
 
     if reviceServerIp != allowServerIp:
