@@ -4,6 +4,7 @@ Description=HHinfo boot Service
 
 [Service]
 Type=simple
+WorkingDirectory=/home/ubuntu/hhinfo_PI
 ExecStart=/home/ubuntu/hhinfo_PI/bootAPI.py
 Restart=no
 RestartSec=5

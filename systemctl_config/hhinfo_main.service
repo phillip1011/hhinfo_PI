@@ -4,6 +4,7 @@ Description=HHinfo Main Service
 
 [Service]
 Type=simple
+WorkingDirectory=/home/ubuntu/hhinfo_PI
 ExecStart=/home/ubuntu/hhinfo_PI/main.py
 Restart=always
 RestartSec=10
