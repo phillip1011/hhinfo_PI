@@ -6,7 +6,7 @@ class ServerModel:
     serverport = ''
     VPNserverip = ''
     verifyserverip = '' 
- 
+    forceVPN=''
   
     
     def __init__(self):
@@ -18,6 +18,7 @@ class ServerModel:
         self.serverport = cf.get("ServerConfig", "serverport")
         self.VPNserverip = cf.get("ServerConfig", "VPNserverip")
         self.verifyserverip = cf.get("ServerConfig", "verifyserverip")
+        self.forceVPN = cf.get("ServerConfig", "forceVPN")
         self.show()
     def show(self):
         print("__________ServerModel show__________")
@@ -27,6 +28,7 @@ class ServerModel:
         print("serverport = " + self.serverport)
         print("VPNserverip = " + self.VPNserverip)
         print("verifyserverip = "+ self.verifyserverip)
+        print("forceVPN = "+ self.forceVPN)
    
       
        

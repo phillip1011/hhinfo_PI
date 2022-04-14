@@ -38,15 +38,9 @@ if __name__=='__main__':
 
   
    
-    #loop for checking internet every 1 min
-    # netstatus=1   # 0表示boot時, 1表示每X分鐘檢查
-    # t2 = threading.Thread(target=login_internet.main, args=(serverip, VPNserverip,netstatus))
-    # t2.start()
-
-    #loop for card number every 1 sec
-    
-    #input=b'\x7e\x04\x01\x25\xdb\x01'
- 
+    if globals._server.forceVPN == 'true':
+        print('強制啟用VPN')
+        login_internet.main(globals._server.serverip,globals._server.VPNserverip,0)
    
 
     #
