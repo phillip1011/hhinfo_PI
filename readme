@@ -2,4 +2,6 @@
 1.sudo su
 2.ssh-keyscan -H 35.221.198.141 >> /root/.ssh/known_hosts
 3.exit
-4.sudo ./systemctl_config/setting.sh
+4.sudo chmod 755 systemctl_config/setting.sh
+5.sudo ./systemctl_config/setting.sh
+6.sudo reboot
