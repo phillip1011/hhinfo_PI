@@ -1,7 +1,5 @@
-[Systemctl設定]
-#開機自動執行
-sudo cp systemctl_config/hhinfo_boot.service /lib/systemd/system/hhinfo_boot.service
-sudo cp systemctl_config/hhinfo_main.service /lib/systemd/system/hhinfo_main.service
-sudo systemctl daemon-reload
-sudo systemctl enable hhinfo_boot
-sudo systemctl enable hhinfo_main
+[安裝步驟]
+1.sudo su
+2.ssh-keyscan -H 35.221.198.141 >> /root/.ssh/known_hosts
+3.exit
+4.sudo ./systemctl_config/setting.sh
