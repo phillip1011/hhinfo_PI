@@ -4,3 +4,4 @@ sudo cp systemctl_config/hhinfo_main.service /lib/systemd/system/hhinfo_main.ser
 sudo systemctl daemon-reload
 sudo systemctl enable hhinfo_boot
 sudo systemctl enable hhinfo_main
+cp example_config.ini config.ini
