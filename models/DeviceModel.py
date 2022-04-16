@@ -22,7 +22,7 @@ class DeviceModel:
         if forceLocalIp == 'true' :
             self.localip = cf.get("DeviceConfig", "defaultip")
         else :
-            self.localip = self.getLocalipByServer(serverip)
+            self.localip = self.getLocalipByServer()
 
         conn = sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
         cur = conn.cursor()
