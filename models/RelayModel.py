@@ -22,7 +22,7 @@ class RelayModel:
     def show(self):
         print("__________RelayModel show__________")
         print("relayPins = " , self.relayPins)
-        print("sensorPins = " + self.sensorPins)
+        print("sensorPins = " , self.sensorPins)
 
     def initRelay(self):
         GPIO.output(self.relayPins, 1)

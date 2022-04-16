@@ -83,80 +83,39 @@ def api01():
         status_code = flask.Response(status=401)
         return status_code
         
-    if request.method == 'POST':
-        try:
-            test = json.loads(request.data)
-        except:
-            status_code = flask.Response(status=502)
-            return status_code
-
+    
+    try:
         revice_data = json.loads(request.data)
         if  verifyServerIp(revice_data["serverip"]) != True:
             status_code = flask.Response(status=403)
             return status_code
-
-        action =0
-        for value in revice_data["relay"]:
-                gateno = revice_data["relay"][value]["gateno"]  # null
-                gateno -= 1
-                action =action + globals._relay.relayaction[gateno]
-                print (action)
-
-        if action != 0 :
-            status_code = flask.Response(status=202)
-            return status_code
-
-        #print(request.data)        
-        #print(type(revice_data), revice_data)
-        #print(revice_data["serverip"])
-        status_code = 203
         for value in revice_data["relay"]:
             gateno = revice_data["relay"][value]["gateno"]
             opentime = revice_data["relay"][value]["opentime"]
             waittime = revice_data["relay"][value]["waittime"]
-            #nodeName = revice_data["relay"][value]["nodeName"]
             if isinstance(gateno,int) and isinstance(opentime,int) and isinstance(waittime,int):
-                node=1
-                if globals._device.doortype=='一般':   #設定一般門和鐵卷門開啟時間
-                    dooropentime=5
-                else:
-                    dooropentime=2
-
                 if (gateno == 1 or gateno ==2) and globals._scanner.name == 'AR721':
-
-                    t = threading.Thread(target=ar721action, args=(gateno,dooropentime,))
+                    globals._relay.action(1,globals._device.opendoortime,0)
+                    t = threading.Thread(target=ar721action, args=(gateno,opentime,waittime))
                     t.start()
                 else:
                     globals._relay.action(gateno,opentime,waittime)
-            else: 
-                status_code = 204
-
-        rc2 = {"controlip": globals._device.localip}
-        i = 1
-        relay_status = {}
-        for rx in globals._relay.readRelays():
-            temp = {str(i) : str(rx)}
-            relay_status.update(temp)
-            i = i + 1
-
-        rc2.update({"relay": relay_status })
-        sensor = globals._relay.readSensors()
-        sensor_status = {}
-        i = 1
-        yy = {}
-        for sx in sensor:
-            temp = {str(i): str(sx)}
-            sensor_status.update(temp)
-            i = i + 1
-
-        rc2.update({"sensor": sensor_status})
-        print(rc2)
+        sleep(0.1)
+        rt = {
+            "controlip": globals._device.localip,
+            "relay": globals._relay.readRelays(),
+            "sensor": globals._relay.readSensors()
+        }
         response = app.response_class(
-            response=json.dumps(rc2),
+            response=json.dumps(rt),
             status= status_code,
             mimetype='application/json'
         )
         return response
+
+    except:
+        status_code = flask.Response(status=502)
+        return status_code
 
 
 @app.route('/api/v3/remote/control/relay/<int:id>', methods=['GET'])
