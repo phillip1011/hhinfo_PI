@@ -2,10 +2,12 @@ import sqlite3
 from models.DeviceModel import DeviceModel
 from models.ServerModel import ServerModel
 from models.ScannerModel import ScannerModel
+from models.RelayModel import RelayModel
 from datetime import datetime, timedelta
 
 
 def initialize(): 
+    initRelay()
     initDatabase()
     initDevice()
     initServer()
@@ -36,6 +38,10 @@ def initScanner():
 def initDevice():
     global _device
     _device = DeviceModel()
+
+def initRelay():
+    global _relay
+    _relay = RelayModel()
 
 def removeOldScannerLog():
     sub_7_date = str((datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d'))

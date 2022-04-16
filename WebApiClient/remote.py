@@ -1,15 +1,14 @@
 import json
 import requests
 import time
-import models.relay as relay
 import globals 
 import copy
 
 
 def dcode(uid):
     headers = {'Content-Type': 'application/json'}
-    rxstatus = relay.read_relay() 
-    sxstatus = relay.read_sensor()
+    rxstatus = globals._relay.readRelays() 
+    sxstatus = globals._relay.readSensors()
 
     api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) +"/api/v1/remote/dcode"
     postdata = {
@@ -49,8 +48,8 @@ def report():
 def scode():
     headers = {'Content-Type': 'application/json'}
   
-    rxstatus = relay.read_relay()
-    sxstatus = relay.read_sensor()
+    rxstatus = globals._relay.readRelays()
+    sxstatus = globals._relay.readSensors()
 
     api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) +"/api/v1/remote/scode"
     postdata = {
@@ -78,15 +77,15 @@ def scode():
 
 def monitor_sensor():
     while True:
-        old_rxstatus = relay.read_relay().copy()
-        old_sxstatus = relay.read_sensor().copy()
+        old_rxstatus = globals._relay.readRelays().copy()
+        old_sxstatus = globals._relay.readSensors().copy()
 
         # print('Relay Status :' , old_rxstatus)
         # print('Relay Sensor :' , old_sxstatus)
         time.sleep(0.5)
 
 
-        if old_rxstatus != relay.read_relay() or old_sxstatus != relay.read_sensor():
+        if old_rxstatus != globals._relay.readRelays() or old_sxstatus != globals._relay.readSensors():
             print('tigger scode')
             scode()
 

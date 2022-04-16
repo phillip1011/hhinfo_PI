@@ -1,7 +1,5 @@
 import sqlite3
 from datetime import datetime
-import models.relay as relay
-import WebApiClient.remote as remote
 import globals
 rxstatus = [0, 0, 0, 0]
 sxstatus = [0, 0, 0, 0, 0, 0]
@@ -16,7 +14,7 @@ def initGlobals():
 
 
 def chkcard():
-    #relay.setup()
+    #globals._relay.setup()
     #開啟資料庫連線
     
     if globals._device.mode =='手動':
@@ -41,15 +39,15 @@ def chkcard():
 
     if data == None:
         print("本時段無預約:關閉R3及R4")
-        relay.action(3,0,0)
-        relay.action(4,0,0)
+        globals._relay.action(3,0,0)
+        globals._relay.action(4,0,0)
         return 0
     
    
     print("本時段有預約")
     if data[4] == '0':
             print("無預約冷氣:關閉R4")
-            relay.action(4,0,0)
+            globals._relay.action(4,0,0)
  
 
     conn.commit()

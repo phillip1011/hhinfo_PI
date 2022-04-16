@@ -1,12 +1,11 @@
 import flask
-#import models.relay as relay
+
 from flask import jsonify, request
 import base64
 import json
 import time
 import sqlite3
 import threading
-import models.relay as relay
 import WebApiClient.update_time as update_time
 import models.ar721 as ar721
 from chkcard import ar721comm
@@ -97,12 +96,10 @@ def api01():
             return status_code
 
         action =0
-        #for rx1 in relay.relayaction:
-        #    action = action + rx1
         for value in revice_data["relay"]:
                 gateno = revice_data["relay"][value]["gateno"]  # null
                 gateno -= 1
-                action =action + relay.relayaction[gateno]
+                action =action + globals._relay.relayaction[gateno]
                 print (action)
 
         if action != 0 :
@@ -130,20 +127,20 @@ def api01():
                     t = threading.Thread(target=ar721action, args=(gateno,dooropentime,))
                     t.start()
                 else:
-                    relay.action(gateno,opentime,waittime)
+                    globals._relay.action(gateno,opentime,waittime)
             else: 
                 status_code = 204
 
         rc2 = {"controlip": globals._device.localip}
         i = 1
         relay_status = {}
-        for rx in relay.read_relay():
+        for rx in globals._relay.readRelays():
             temp = {str(i) : str(rx)}
             relay_status.update(temp)
             i = i + 1
 
         rc2.update({"relay": relay_status })
-        sensor = relay.read_sensor()
+        sensor = globals._relay.readSensors()
         sensor_status = {}
         i = 1
         yy = {}
@@ -172,7 +169,7 @@ def api01A(id):
     if request.method == "GET":      
         rc2 = {"controlip": globals._device.localip}
         relay_status = {}
-        temp = {str(id) : str(relay.read_relay()[id])}
+        temp = {str(id) : str(globals._relay.readRelays()[id])}
         relay_status.update(temp)
         rc2.update({"relay": relay_status})
         response = app.response_class(
@@ -191,7 +188,7 @@ def api01B(id):
         
     if request.method == "GET":       
         rc2 = {"controlip": globals._device.localip}
-        sensor = relay.read_sensor()
+        sensor = globals._relay.readSensors()
         sensor_status = {}
         temp = {str(id) : str(sensor[id])}
         sensor_status.update(temp)

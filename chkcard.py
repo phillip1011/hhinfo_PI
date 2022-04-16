@@ -1,8 +1,6 @@
 import sqlite3
-from datetime import datetime, timedelta
-import models.relay as relay
-import WebApiClient.remote as remote
 from time import sleep
+from datetime import datetime
 import serial
 from upload import uploadlog
 import globals 
@@ -96,7 +94,7 @@ def getOverTimeBookingDataByCustomerId(customer_id):
 
 
 def actionDoor(uid,userMode):
-    sxstatus = relay.read_sensor()
+    sxstatus = globals._relay.readSensors()
     #S1=1 => 門狀態是關閉
     #S1=0 => 門狀態是開啟
     s1=sxstatus[0]
@@ -123,7 +121,7 @@ def openDoor():
         sleep(globals._device.opendoortime)
         ser.write(AR721_R1_OFF)
     else:
-        relay.action(1,globals._device.opendoortime,0)
+        globals._relay.action(1,globals._device.opendoortime,0)
     
 
 
@@ -138,11 +136,11 @@ def closeDoor():
         sleep(globals._device.opendoortime)
         ser.write(AR721_R2_OFF)
     else:
-        relay.action(2,globals._device.opendoortime,0)
+        globals._relay.action(2,globals._device.opendoortime,0)
 
 
 def actionRelay(relayNo):
-    sxstatus = relay.read_sensor()
+    sxstatus = globals._relay.readSensors()
     #S1=1 => 門狀態是關閉
     #S1=0 => 門狀態是開啟
     s1=sxstatus[0]
@@ -157,11 +155,11 @@ def actionRelay(relayNo):
 
 def openRelay(relayNo):
     print('openRelay : ',relayNo)
-    relay.action(relayNo,255,0)
+    globals._relay.action(relayNo,255,0)
 
 def closeRelay(relayNo):
     print('closeRelay : ',relayNo)
-    relay.action(relayNo,0,0)
+    globals._relay.action(relayNo,0,0)
     
 
 def log(uid,auth,process,result):

@@ -3,7 +3,6 @@ import serial
 from datetime import datetime
 import chkcard as chkcard
 import WebApiClient.remote as remote
-import models.relay as relay
 import globals
 
 def callback(uid):

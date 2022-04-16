@@ -2,11 +2,7 @@
 import RPi.GPIO as GPIO
 import threading
 import serial
-import sqlite3
-from datetime import datetime
-from time import sleep
 import WebApiClient.login_internet as login_internet
-import models.relay as relay
 import WebApiClient.api as api
 import WebApiClient.remote as remote
 
@@ -22,10 +18,6 @@ def initGlobals():
     globals.initialize() 
 
 
-def initRelay():
-    relay.setup()
-    relay.start_relay()
-
 
 
     
@@ -33,11 +25,7 @@ def initRelay():
 if __name__=='__main__':
     #loop for change relay off
     initGlobals()
-    initRelay()
 
-
-  
-   
     if globals._server.forceVPN == 'true':
         print('強制啟用VPN')
         login_internet.main(globals._server.serverip,globals._server.VPNserverip,0)
