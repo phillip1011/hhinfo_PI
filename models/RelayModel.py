@@ -59,7 +59,7 @@ class RelayModel:
                 xx.append(0)
             else: 
                 xx.append(1)
-        print('readSensors : ',xx)
+        # print('readSensors : ',xx)
         return xx
 
 
@@ -71,7 +71,7 @@ class RelayModel:
                 xx.append(0)
             else: 
                 xx.append(1)
-        print('readRelays : ',xx)
+        # print('readRelays : ',xx)
         return xx 
     
     
