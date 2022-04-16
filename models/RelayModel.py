@@ -81,6 +81,7 @@ class RelayModel:
             time.sleep(waittime)
         if opentime <= 0:
             self.closeGPIOPin(pinNumber)
+            return
         self.openGPIOPin(pinNumber)
 
         if opentime<255:

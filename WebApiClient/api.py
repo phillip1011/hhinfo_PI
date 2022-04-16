@@ -108,7 +108,7 @@ def api01():
         }
         response = app.response_class(
             response=json.dumps(rt),
-            status= status_code,
+            status= 203,
             mimetype='application/json'
         )
         return response
