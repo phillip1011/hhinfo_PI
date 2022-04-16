@@ -44,7 +44,7 @@ class RelayModel:
         self.readGPIOPinStatus(pinNumber)
 
 
-    def readGPIOPinStatus(pinNumber):
+    def readGPIOPinStatus(self,pinNumber):
         if GPIO.input(pinNumber) == 1:
             print("檢查 GPIO Pin腳 : " +str(pinNumber) + " 關閉")
         else:
