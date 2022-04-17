@@ -80,12 +80,17 @@ def monitor_sensor():
         old_rxstatus = globals._relay.readRelays().copy()
         old_sxstatus = globals._relay.readSensors().copy()
 
+       
         # print('Relay Status :' , old_rxstatus)
         # print('Relay Sensor :' , old_sxstatus)
         time.sleep(0.5)
 
+        new_rxstatus = globals._relay.readRelays().copy()
+        new_sxstatus = globals._relay.readSensors().copy()
 
-        if old_rxstatus != globals._relay.readRelays() or old_sxstatus != globals._relay.readSensors():
+        if old_rxstatus != new_rxstatus or old_sxstatus != new_sxstatus:
+            if old_sxstatus[3] == 0 and new_sxstatus[3] == 1 and globals._scanner.name == 'R35C' :
+                globals._relay.action(1,globals._device.opendoortime,0)
             print('tigger scode')
             scode()
 
