@@ -31,6 +31,7 @@ if __name__=='__main__':
         print('強制啟用VPN')
         login_internet.main(globals._server.serverip,globals._server.VPNserverip,0)
    
+    globals.initDevice()
 
     #
     if globals._scanner.name == 'AR721':
