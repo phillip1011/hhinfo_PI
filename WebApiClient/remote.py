@@ -41,7 +41,7 @@ def dcode(uid):
 
 def report():
     while True:
-        time.sleep(10)
+        time.sleep(180)
         rc = dcode(str(9999099990))
 
 
@@ -81,12 +81,15 @@ def monitor_sensor():
         old_sxstatus = globals._relay.readSensors().copy()
 
        
-        # print('Relay Status :' , old_rxstatus)
-        # print('Relay Sensor :' , old_sxstatus)
+        # print('Relay Old Status :' , old_rxstatus)
+        # print('Sensor Old Status :' , old_sxstatus)
         time.sleep(0.5)
 
         new_rxstatus = globals._relay.readRelays().copy()
         new_sxstatus = globals._relay.readSensors().copy()
+
+        # print('Relay New Status :' , new_rxstatus)
+        # print('Sensor New Status :' , new_sxstatus)
 
         if old_rxstatus != new_rxstatus or old_sxstatus != new_sxstatus:
             if old_sxstatus[3] == 0 and new_sxstatus[3] == 1 and globals._scanner.name == 'R35C' :

@@ -55,7 +55,11 @@ def verifyServerIp(reviceServerIp):
         return False
     return True
 
-def ar721action(gateno,dooropentime):
+def ar721action(gateno,dooropentime,waittime):
+
+    if waittime!=0:
+        time.sleep(waittime)
+
     ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
     AR721R1ON=ar721comm(1,'0x21','0x82')   #door relay on
     AR721R1OFF=ar721comm(1,'0x21','0x83')  #door relay off
@@ -95,7 +99,6 @@ def api01():
             waittime = revice_data["relay"][value]["waittime"]
             if isinstance(gateno,int) and isinstance(opentime,int) and isinstance(waittime,int):
                 if (gateno == 1 or gateno ==2) and globals._scanner.name == 'AR721':
-                    globals._relay.action(1,globals._device.opendoortime,0)
                     t = threading.Thread(target=ar721action, args=(gateno,opentime,waittime))
                     t.start()
                 else:

@@ -73,6 +73,7 @@ def getNowBookingDataByCustomerId(customer_id):
     return nowBookingData
 
 def getOverTimeBookingDataByCustomerId(customer_id):
+    print('_______',customer_id,_today,_range_id)
     conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
     c=conn.cursor()
     c.execute(
@@ -93,25 +94,28 @@ def getOverTimeBookingDataByCustomerId(customer_id):
     return overTimeBookingData
 
 
-def actionDoor(uid,userMode):
-    sxstatus = globals._relay.readSensors()
-    #S1=1 => 門狀態是關閉
-    #S1=0 => 門狀態是開啟
-    s1=sxstatus[0]
-    # s1=1
-    print('s1 status =',s1)
-    if s1==1:
-        # 開門
-        openDoor()
-        log(uid,'合法卡',userMode+'-開門',1)
-    else:
-        # 關門
-        if globals._device.doortype=='鐵捲門':
-            closeDoor()
+def actionDoor(uid,userMode,relays):
+    if globals._device.doortype != '鐵捲門' :
+        openDoorWithRelays(relays)
+    else : 
+        sxstatus = globals._relay.readSensors()
+        #S1=1 => 門狀態是關閉
+        #S1=0 => 門狀態是開啟
+        s1=sxstatus[0]
+        print('s1 status =',s1)
+        if s1==1:
+            # 開門
+            openDoorWithRelays(relays)
+            log(uid,'合法卡',userMode+'-開門',1)
+            return 1
+        else:
+            # 關門
+            closeDoorWithRelays(relays)
             log(uid,'合法卡',userMode+'-關門',1)
+            return 0
 
 
-def openDoor():
+def openDoorWithRelays(relays):
     print('openDoor')
     if globals._scanner.name=="AR721":
         AR721_R1_ON=ar721comm(1,'0x21','0x82')   #door relay on
@@ -122,13 +126,14 @@ def openDoor():
         ser.write(AR721_R1_OFF)
     else:
         globals._relay.action(1,globals._device.opendoortime,0)
+    for relay in relays:
+        openRelay(int(relay))
     
 
 
-def closeDoor():
+def closeDoorWithRelays(relays):
     print('closeDoor')
     if globals._scanner.name=="AR721":
-
         AR721_R2_ON=ar721comm(1,'0x21','0x85')   #alarm relay on
         AR721_R2_OFF=ar721comm(1,'0x21','0x86')  #alarm relay off
         ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
@@ -137,21 +142,10 @@ def closeDoor():
         ser.write(AR721_R2_OFF)
     else:
         globals._relay.action(2,globals._device.opendoortime,0)
+    for relay in relays:
+        closeRelay(int(relay))
 
 
-def actionRelay(relayNo):
-    sxstatus = globals._relay.readSensors()
-    #S1=1 => 門狀態是關閉
-    #S1=0 => 門狀態是開啟
-    s1=sxstatus[0]
-    # s1=1
-    if s1==1:
-        # 開門
-        openRelay(relayNo)
-    else:
-        # 關門
-        if globals._device.doortype=='鐵捲門':
-            closeRelay(relayNo)
 
 def openRelay(relayNo):
     print('openRelay : ',relayNo)
@@ -176,22 +170,13 @@ def log(uid,auth,process,result):
 
 def chkcard(uid):
     print("____________chkcard_run__________________")
-   
-
-    # initData
     initData()
-    # initGlobals()
-
-
-
     #取得Card資料
     card = getCardByUid(uid)
     if card == None:
         print('找不到Card資料 => 非法卡')
         log(uid,'非法卡','禁止進入',0)
         return 0
-
-
     
     #取得Spcard資料
     spcard = getSpcardByCustomerId(card[1])
@@ -201,29 +186,36 @@ def chkcard(uid):
         #判斷預約紀錄
         nowBookingData = getNowBookingDataByCustomerId(card[1])
         if nowBookingData == None:
-            print('找不到預約紀錄 => 不開門 , 找尋超時紀錄')
-            overTimeBookingData = getOverTimeBookingDataByCustomerId(card[1])
-            if overTimeBookingData == None :
-                print('找不到超時預約紀錄 => 不關門')
-                log(uid,'合法卡','非預約時段',0)
+            if globals._device.doortype=='鐵捲門' :
+                print('找不到預約紀錄 => 不開門 , 找尋超時紀錄')
+                overTimeBookingData = getOverTimeBookingDataByCustomerId(card[1])
+                if overTimeBookingData == None :
+                    print('找不到超時預約紀錄 => 不關門')
+                    log(uid,'合法卡','非預約時段',0)
+                else:
+                    print('找到超時預約紀錄 => 關門')
+                    closeDoorWithRelays([3,4])
+                    log(uid,'合法卡','超時關門',1)
+                return 0
             else:
-                print('找到超時預約紀錄 => 關門')
-                closeDoor()
-                log(uid,'合法卡','超時關門',1)
-            return 0
-
-        actionDoor(uid,'租借時段')
-        actionRelay(3)
+                log(uid,'合法卡','非預約時段',0)
+                return 0
+        authority_relay = [3]
         aircontrol = nowBookingData[4]
         if aircontrol == '1':
-            actionRelay(4)
+            authority_relay.insert(4)
+        actionDoorReturn = actionDoor(uid,'租借時段',authority_relay)
+     
+            
+          
     else:
-        actionDoor(uid,'全區卡')
+        print("全區卡")
         authority = spcard[2]
-        if len(authority) > 0:
-            authority_split = authority.split(',')
-            for authority_relay in authority_split:
-                actionRelay(int(authority_relay))
+        print('____authority : ',authority)
+        authority_split = authority.split(',')
+        print('authority_split : ',authority_split)
+        actionDoorReturn = actionDoor(uid,'全區卡',authority_split)
+        
     
     
 
