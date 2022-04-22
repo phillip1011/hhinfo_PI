@@ -10,7 +10,7 @@ controlip=""
 
 def initGlobals():
     globals.initialize() 
-
+    globals._relay.setupGPIO()
 
 
 def chkcard():

@@ -16,7 +16,7 @@ GPIO.setwarnings(False)
 
 def initGlobals():
     globals.initialize() 
-    globals._relay.initRelay()
+    globals._relay.setupGPIOandInit()
 
 
 

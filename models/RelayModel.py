@@ -17,20 +17,27 @@ class RelayModel:
         self.relayPins = json.loads(cf.get("RelayConfig", "relayPins"))
         self.sensorPins = json.loads(cf.get("RelayConfig", "sensorPins"))
         self.show()
-        self.setupGPIO()
     
     def show(self):
         print("__________RelayModel show__________")
         print("relayPins = " , self.relayPins)
         print("sensorPins = " , self.sensorPins)
 
-    def initRelay(self):
-        GPIO.output(self.relayPins, 1)
 
     def setupGPIO(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relayPins , GPIO.OUT)
         GPIO.setup(self.sensorPins , GPIO.IN)
+
+    def setupGPIOandInit(self):
+        GPIO.setmode(GPIO.BCM)
+        for i in self.relayPins:
+            GPIO.setup(i, GPIO.OUT )
+            GPIO.output(i, 1)
+      
+        # GPIO.setup(self.relayPins , GPIO.OUT)#第一次設定時會開啟RELAY
+        GPIO.setup(self.sensorPins , GPIO.IN)
+      
        
 
     def openGPIOPin(self,pinNumber):
@@ -96,5 +103,6 @@ class RelayModel:
         t.start()
 
 
-      
+    def destroy(self):
+        GPIO.cleanup()
         

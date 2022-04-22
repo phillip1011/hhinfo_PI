@@ -6,6 +6,14 @@ from models.RelayModel import RelayModel
 from datetime import datetime, timedelta
 
 
+def initializeWithOutGPIO():
+    initDatabase()
+    initDevice()
+    initServer()
+    initScanner()
+    removeOldScannerLog()
+
+    
 def initialize(): 
     initRelay()
     initDatabase()

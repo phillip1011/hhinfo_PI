@@ -10,8 +10,7 @@ import globals
 import subprocess
 
 def initGlobals():
-    globals.initialize() 
-
+    globals.initializeWithOutGPIO()
  
 
 
