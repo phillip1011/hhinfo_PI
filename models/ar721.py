@@ -9,8 +9,6 @@ def callback(uid):
     print("__________do_read_ar721________________")
     uid =str(uid).zfill(10)
     chkcard.chkcard(uid)
-    remote.scode()
-
 
 
 def write_command_to_node(func):
