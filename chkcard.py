@@ -96,6 +96,7 @@ def getOverTimeBookingDataByCustomerId(customer_id):
 def actionDoor(uid,userMode,relays):
     if globals._device.doortype != '鐵捲門' :
         openDoorWithRelays(relays)
+        log(uid,'合法卡',userMode+'-開門',1)
     else : 
         sxstatus = globals._relay.readSensors()
         #S1=1 => 門狀態是關閉
@@ -210,8 +211,10 @@ def chkcard(uid):
     else:
         print("全區卡")
         authority = spcard[2]
-        print('____authority : ',authority)
-        authority_split = authority.split(',')
+        if authority == '':
+            authority_split=[]
+        else:
+            authority_split = authority.split(',')
         print('authority_split : ',authority_split)
         actionDoorReturn = actionDoor(uid,'全區卡',authority_split)
         
