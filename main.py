@@ -34,7 +34,7 @@ if __name__=='__main__':
         t.start()
      
    
-    globals.initDevice()
+  
 
     #
     if globals._scanner.name == 'AR721':

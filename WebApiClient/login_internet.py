@@ -62,6 +62,7 @@ def main(keepalive):
             os.system("sudo killall openvpn") #防止不正常斷線, VPN卡Threading
             #wlog("PING "+serverip+" WEB主機回應失敗----結束","a+")
             print("PING "+globals._server.serverip+" WEB主機回應失敗----結束")
+        globals.initDevice()
         if keepalive==True:
             sleep(60*1)
         else:

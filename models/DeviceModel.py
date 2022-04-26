@@ -45,12 +45,12 @@ class DeviceModel:
 
     def show(self):
         print("__________DeviceModel show__________")
-        print("name = " + self.name)
-        print("family = " + self.family)
-        print("mode = " + self.mode)
-        print("doortype = " + self.doortype)
-        print("localip = " + self.localip)
-        print("localport = " + self.localport)
+        print("name = " , self.name)
+        print("family = " , self.family)
+        print("mode = " , self.mode)
+        print("doortype = " , self.doortype)
+        print("localip = " , self.localip)
+        print("localport = " , self.localport)
         print("opendoortime = " , self.opendoortime)
 
     def getLocalipByServer(self):
