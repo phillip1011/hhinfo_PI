@@ -19,7 +19,7 @@ def updatetime():
     path = '/api/v1/data/time'
     headers = {'Content-Type': 'application/json'}
     api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) + path
-    response = requests.get(api_url_base) 
+    response = requests.get(api_url_base, timeout=3) 
     print(response) 
     r = response.json()
     time = r['data']
@@ -41,7 +41,8 @@ def updatedevice():
     headers = {'Content-Type': 'application/json'}
     api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) + path
     print (api_url_base,request_string)
-    response = requests.get(api_url_base,params=request_string, headers=headers) 
+    response = requests.get(api_url_base,params=request_string, headers=headers, timeout=3) 
+
 
     if response.status_code==200:
         print("伺服器連線成功")

@@ -13,7 +13,6 @@ def callback(uid):
     if uid != '' :
         uid =str(uid).zfill(10)
         chkcard.chkcard(uid)
-        remote.scode()
     else:
         print("read nfc error")
 

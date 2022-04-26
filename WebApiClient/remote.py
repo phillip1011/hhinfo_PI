@@ -26,9 +26,7 @@ def dcode(uid):
     # print(request_string)
     try:
         print('呼叫伺服器 : '+api_url_base +' ,postdata : '+json.dumps(postdata))
-        response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata))
-
-
+        response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata), timeout=3)
         print(response.text)
         print('伺服器回傳狀態:'+str(response.status_code))
         if (response.status_code == 200):
@@ -36,7 +34,7 @@ def dcode(uid):
             print ('伺服器回傳狀態',response.text)
     except:
         print("Post Dcode error!")
-        print("Response text" ,response.text )
+    
       
 
 def report():
@@ -63,7 +61,7 @@ def scode():
     }
     try:
         print('呼叫伺服器 : '+api_url_base +' ,postdata : '+json.dumps(postdata))
-        response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata))
+        response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata), timeout=3)
 
 
         print(response.text)
@@ -73,7 +71,7 @@ def scode():
             print ('伺服器回傳狀態',response.text)
     except:
         print("Post Scode error!")
-        print("Response text" ,response.text )
+
 
 def monitor_sensor():
     while True:

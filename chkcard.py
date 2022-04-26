@@ -2,7 +2,6 @@ import sqlite3
 from time import sleep
 from datetime import datetime
 import serial
-from upload import uploadlog
 import globals 
 
 
@@ -162,7 +161,7 @@ def log(uid,auth,process,result):
     c.execute("INSERT INTO scanlog VALUES(?,?,?,0,?,?,?)", (uid,_today,_time,auth,process,result))
     conn.commit()
     conn.close()
-    uploadlog()
+
 
     
 
