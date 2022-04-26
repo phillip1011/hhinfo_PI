@@ -8,6 +8,7 @@ import sqlite3
 import configparser
 import globals
 import subprocess
+import threading
 
 def initGlobals():
     globals.initializeWithOutGPIO()
@@ -84,13 +85,16 @@ if __name__=='__main__':
     serverip = cf.get("ServerConfig", "serverip")
     VPNserverip = cf.get("ServerConfig", "VPNserverip")
     forceVPN = cf.get("ServerConfig", "forceVPN")
-    print(forceVPN)
-    netstatus=0
-    if forceVPN == 'true':
-        print('強制啟用VPN')
-        login_internet.main(serverip,VPNserverip,netstatus)
+
     
     initGlobals()
+    if forceVPN == 'true':
+        print('強制啟用VPN')
+        t = threading.Thread(target=login_internet.main, args=(False,))
+        t.setDaemon(True)
+        t.start()
+    initGlobals()
+
     updatetime()
     updatedevice()
     

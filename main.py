@@ -29,7 +29,10 @@ if __name__=='__main__':
 
     if globals._server.forceVPN == 'true':
         print('強制啟用VPN')
-        login_internet.main(globals._server.serverip,globals._server.VPNserverip,0)
+        t = threading.Thread(target=login_internet.main, args=(True,))
+        t.setDaemon(True)
+        t.start()
+     
    
     globals.initDevice()
 

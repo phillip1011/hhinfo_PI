@@ -1,6 +1,6 @@
 import os
-import socket
 import pysftp
+import globals
 from datetime import datetime
 from time import sleep
 
@@ -25,19 +25,19 @@ def pingVPNServer(VPNserverip):
     else:
         return response_s
 
-def main(serverip,VPNserverip,netstatus):
+def main(keepalive==False):
     # print(serverip)
     # print(VPNserverip)
-    # while True:
-        if pingServer(serverip) ==0:    #PING WEB SRV
+    while True:
+        if pingServer(globals._server.serverip) ==0:    #PING WEB SRV
             #wlog("PING "+serverip+" WEB主機回應成功","w+")
-            print("PING "+serverip+" WEB主機回應成功")
-            if pingVPNServer(VPNserverip) ==0:     #PING  VPN SRV
+            print("PING "+globals._server.serverip+" WEB主機回應成功")
+            if pingVPNServer(globals._server.VPNserverip) ==0:     #PING  VPN SRV
                 #wlog("PING "+VPNserverip+" VPN主機回應成功","a+")
-                print("PING "+VPNserverip+" VPN主機回應成功")
+                print("PING "+globals._server.VPNserverip+" VPN主機回應成功")
             else:
                 #wlog("PING "+VPNserverip+" 嘗試登入VPN主機","a+")
-                print("PING "+VPNserverip+" 嘗試登入VPN主機")
+                print("PING "+globals._server.VPNserverip+" 嘗試登入VPN主機")
                 mac=open('/sys/class/net/eth0/address').readline()
                 mac=mac[0:17]
                 vpnfile = str(mac.replace(":",""))
@@ -47,13 +47,13 @@ def main(serverip,VPNserverip,netstatus):
                     print("VPN登入檔案存在, 準備登錄VPN Server")
                 else:
                     wlog("下載VPN登入檔案中,請等待","a+")
-                    get_ovpn_file(serverip,vpnfile)
+                    get_ovpn_file(globals._server.serverip,vpnfile)
                     wlog("下載VPN登入檔案,完成! , 準備登錄VPN Server","a+")
                 os.system("sudo killall openvpn")
                 sleep(1)
                 os.system("sudo -b openvpn --config /home/ubuntu/hhinfo_PI/" +vpnfile)
                 sleep(10)
-                if pingVPNServer(VPNserverip) ==0:
+                if pingVPNServer(globals._server.VPNserverip) ==0:
                     wlog("登入VPN成功","a+")
                 else:
                     wlog("登入VPN失敗","a+")
@@ -61,8 +61,8 @@ def main(serverip,VPNserverip,netstatus):
         else:
             os.system("sudo killall openvpn") #防止不正常斷線, VPN卡Threading
             #wlog("PING "+serverip+" WEB主機回應失敗----結束","a+")
-            print("PING "+serverip+" WEB主機回應失敗----結束")
-        if netstatus==1:
+            print("PING "+globals._server.serverip+" WEB主機回應失敗----結束")
+        if keepalive==True:
             sleep(60*1)
         else:
             return
