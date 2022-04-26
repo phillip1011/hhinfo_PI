@@ -25,7 +25,7 @@ def pingVPNServer(VPNserverip):
     else:
         return response_s
 
-def main(keepalive==False):
+def main(keepalive):
     # print(serverip)
     # print(VPNserverip)
     while True:
