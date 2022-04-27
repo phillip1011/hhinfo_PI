@@ -203,7 +203,7 @@ def chkcard(uid):
         authority_relay = [3]
         aircontrol = nowBookingData[4]
         if aircontrol == '1':
-            authority_relay.insert(4)
+            authority_relay.append(4)
         actionDoorReturn = actionDoor(uid,'租借時段',authority_relay)
      
             

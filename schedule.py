@@ -9,18 +9,16 @@ controlip=""
 
 
 def initGlobals():
-    globals.initialize() 
+    globals.initRelay()
+    globals.initDevice()
     globals._relay.setupGPIO()
 
 
 def chkcard():
-    #globals._relay.setup()
-    #開啟資料庫連線
-    
     if globals._device.mode =='手動':
+        print('手動模式, 不關閉Relay')
         return 0
 
-   
     today=str(datetime.now().strftime('%Y-%m-%d'))
     time=str(datetime.now().strftime('%H%M%S'))
   
