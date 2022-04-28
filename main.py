@@ -42,12 +42,12 @@ if __name__=='__main__':
         t = threading.Thread(target=ar721.do_read_ar721)
         t.setDaemon(True)
         t.start()
-    else:
+    elif globals._scanner.name =='R35C' :
         print('Start thread R35C')
         t = threading.Thread(target=r35c.do_read_r35c)
         t.setDaemon(True)
         t.start()
-    
+
  
 
    
