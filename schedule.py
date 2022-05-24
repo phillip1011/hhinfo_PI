@@ -12,7 +12,7 @@ def initGlobals():
     globals.initRelay()
     globals.initDevice()
     globals._relay.setupGPIO()
-
+    globals.initScanner()
 
 def chkcard():
     if globals._device.mode =='手動':
@@ -41,12 +41,18 @@ def chkcard():
         globals._relay.action(4,0,0)
         return 0
     
-   
-    print("本時段有預約")
+    else:
+        print("本時段有預約")
+        if globals._scanner.name == "None":
+            print("無安裝卡機:開啟R3並檢查是否開啟R4")
+            globals._relay.action(3,255,0)
+            if data[4] == '1':
+                print("有預約冷氣:開啟R4")
+                globals._relay.action(4,255,0)
+
     if data[4] == '0':
-            print("無預約冷氣:關閉R4")
-            globals._relay.action(4,0,0)
- 
+        print("無預約冷氣:關閉R4")
+        globals._relay.action(4,0,0)  
 
     conn.commit()
     conn.close()

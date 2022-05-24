@@ -200,11 +200,16 @@ def chkcard(uid):
             else:
                 log(uid,'合法卡','非預約時段',0)
                 return 0
-        authority_relay = [3]
-        aircontrol = nowBookingData[4]
-        if aircontrol == '1':
-            authority_relay.append(4)
-        actionDoorReturn = actionDoor(uid,'租借時段',authority_relay)
+        else:
+            #print('my _device id is:', globals._device.dev_id)
+            #print('bh.device id is:',nowBookingData[1])
+            authority_relay=[]
+            if globals._device.dev_id==nowBookingData[1] :#判斷是否為本機預約資料,用於公用門
+                authority_relay = [3]
+                aircontrol = nowBookingData[4]
+                if aircontrol == '1':
+                    authority_relay.append(4)
+            actionDoorReturn = actionDoor(uid,'租借時段',authority_relay)
      
             
           

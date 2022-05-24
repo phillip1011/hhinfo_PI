@@ -2,6 +2,7 @@ import sqlite3
 import configparser
 import subprocess
 class DeviceModel:
+    dev_id=''
     name = ''
     family = ''
     mode = ''
@@ -30,8 +31,9 @@ class DeviceModel:
         data = cur.fetchone()
         conn.close()
         if data != None:
+            self.dev_id = data[0]
             self.name = data[5]
-            self.family = data[6]
+            self.family = data[4]
             self.mode = data[8]
             self.doortype = data[10]
             self.localip = data[1].split(':',1)[0]
