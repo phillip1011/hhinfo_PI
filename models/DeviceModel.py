@@ -6,7 +6,9 @@ class DeviceModel:
     name = ''
     family = ''
     mode = ''
+    style = ''
     doortype = ''
+    is_booking = ''
     localip = ''
     localport = ''
     opendoortime = 2
@@ -35,7 +37,9 @@ class DeviceModel:
             self.name = data[5]
             self.family = data[4]
             self.mode = data[8]
+            self.style = data[9]
             self.doortype = data[10]
+            self.is_booking = data[11]
             self.localip = data[1].split(':',1)[0]
             self.localport = data[1].split(':',1)[1]
         if self.doortype=='一般':

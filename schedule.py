@@ -18,6 +18,9 @@ def chkcard():
     if globals._device.mode =='手動':
         print('手動模式, 不關閉Relay')
         return 0
+    if globals._device.style =='公用' and globals._device.is_booking =='0':
+        print('不可預約公用門, 不檢查Relay')
+        return 0
 
     today=str(datetime.now().strftime('%Y-%m-%d'))
     time=str(datetime.now().strftime('%H%M%S'))
@@ -32,7 +35,7 @@ def chkcard():
 
     conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
     c=conn.cursor()
-    c.execute('select * from booking_histories where date=? and range_id=? order by aircontrol desc' ,(today,range_id,))
+    c.execute('select * from booking_histories where date=? and range_id=? and deviceid=? order by aircontrol desc' ,(today,range_id,globals._device.dev_id,))
     data = c.fetchone()
 
     if data == None:
