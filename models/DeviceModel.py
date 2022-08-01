@@ -12,6 +12,7 @@ class DeviceModel:
     localip = ''
     localport = ''
     opendoortime = 2
+    authorization_buffer_minutes = 0
     
     
   
@@ -42,10 +43,13 @@ class DeviceModel:
             self.is_booking = data[11]
             self.localip = data[1].split(':',1)[0]
             self.localport = data[1].split(':',1)[1]
+            
         if self.doortype=='一般':
             self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_normal"))
         else:
             self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_iron"))
+
+        self.authorization_buffer_minutes = (int)(cf.get("DeviceConfig", "authorization_buffer_minutes"))
         self.show()
 
 

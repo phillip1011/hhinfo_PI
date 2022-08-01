@@ -1,6 +1,6 @@
 import sqlite3
 from time import sleep
-from datetime import datetime
+from datetime import datetime, timedelta
 import serial
 import globals 
 
@@ -11,12 +11,24 @@ def initData():
     global _today
     global _range_id
     global _time
+    global _buffer_range_id
+    global _buffer_time
+
     _today=str(datetime.now().strftime('%Y-%m-%d'))
     _time=str(datetime.now().strftime('%H:%M:%S'))
-    if int(_time[3:5])>=30:
-        _range_id=str(_time[0:2])+':30'
+    _buffer_time=str((datetime.now() + timedelta(minutes=globals._device.authorization_buffer_minutes)).strftime('%H:%M:%S'))
+   
+    _buffer_range_id= criteriaRangeId(_buffer_time)
+    _range_id = criteriaRangeId(_time)
+
+   
+
+
+def criteriaRangeId(time):
+    if int(time[3:5])>=30:
+        return str(time[0:2])+':30'
     else:
-        _range_id=str(_time[0:2])+':00'
+        return str(time[0:2])+':00'
 
 
 def initGlobals():
@@ -59,11 +71,12 @@ def getNowBookingDataByCustomerId(customer_id):
         'from booking_customers as bc '
         'join booking_histories as bh '
         'on bc.booking_id = bh.id '
-        'where bc.customer_id = ? and bh.date = ? and bh.range_id = ?',
+        'where bc.customer_id = ? and bh.date = ? and ( bh.range_id = ? or bh.range_id = ? )',
         (
             customer_id,
             _today,
             _range_id,
+            _buffer_range_id
         )
     )
 
@@ -124,8 +137,7 @@ def openDoorWithRelays(relays):
         ser.write(AR721_R1_ON)
         sleep(globals._device.opendoortime)
         ser.write(AR721_R1_OFF)
-    else:
-        globals._relay.action(1,globals._device.opendoortime,0)
+    globals._relay.action(1,globals._device.opendoortime,0)
     for relay in relays:
         openRelay(int(relay))
     
@@ -140,8 +152,8 @@ def closeDoorWithRelays(relays):
         ser.write(AR721_R2_ON)
         sleep(globals._device.opendoortime)
         ser.write(AR721_R2_OFF)
-    else:
-        globals._relay.action(2,globals._device.opendoortime,0)
+  
+    globals._relay.action(2,globals._device.opendoortime,0)
     for relay in relays:
         closeRelay(int(relay))
 
