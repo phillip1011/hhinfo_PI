@@ -26,7 +26,8 @@ def do_read_ar721():
     ser.flushOutput()  # flush output buffer
     nodesCount = globals._scanner.nodesCount
     while True:
-        for node in range(nodesCount):
+       for x in range(nodesCount):
+            node = x+1
             write_command_to_node(node, '0x25')
             try:
                 output = ser.read(64)

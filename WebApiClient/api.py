@@ -200,7 +200,8 @@ def api02():
         status_code = flask.Response(status=203)
         if globals._scanner.name=="AR721":
             nodesCount = globals._scanner.nodesCount
-            for node in range(nodesCount):
+            for x in range(nodesCount):
+                node = x+1
                 ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
                 sysyy=int(datetime.now().strftime('%y'))
                 sysmm=int(datetime.now().strftime('%m'))

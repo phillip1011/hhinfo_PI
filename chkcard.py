@@ -132,7 +132,8 @@ def openDoorWithRelays(relays):
     print('openDoor')
     if globals._scanner.name=="AR721":
         nodesCount = globals._scanner.nodesCount
-        for node in range(nodesCount):
+        for x in range(nodesCount):
+            node = x+1
             AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
             AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
             ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
@@ -149,7 +150,8 @@ def closeDoorWithRelays(relays):
     print('closeDoor')
     if globals._scanner.name=="AR721":
         nodesCount = globals._scanner.nodesCount
-        for node in range(nodesCount):
+        for x in range(nodesCount):
+            node = x+1
             AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
             AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
             ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
