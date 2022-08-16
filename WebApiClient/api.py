@@ -199,32 +199,28 @@ def api02():
         #update_time.update2(revice_data)
         status_code = flask.Response(status=203)
         if globals._scanner.name=="AR721":
-            node=1
-            ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-            sysyy=int(datetime.now().strftime('%y'))
-            sysmm=int(datetime.now().strftime('%m'))
-            sysdd=int(datetime.now().strftime('%d'))
-            syshh=int(datetime.now().strftime('%H'))
-            sysmin=int(datetime.now().strftime('%M'))
-            sysss=int(datetime.now().strftime('%S'))
-            sysww=int(datetime.now().strftime('%w'))
-            if sysww==0:
-                sysww=7
-            print("PI系統時間=",sysyy,'-',sysmm,'-',sysdd,' ',syshh,':',sysmin,':',sysss)
-            xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy
-            
-            sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
-            sum =sum % 256
-            # print(sysyy,sysmm,sysdd)
-            # print(sysww)
-            # print(syshh,sysmin,sysss)
-            # print('xor=',hex(xor))
-            # print('sum=',hex(sum))
-            input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
-            # print(input)
-            ser.write(input)
-            sleep(0.2)
-            print(globals._scanner.name,"node=",node, "校時完成")
+            nodesCount = globals._scanner.nodesCount
+            for node in range(nodesCount):
+                ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+                sysyy=int(datetime.now().strftime('%y'))
+                sysmm=int(datetime.now().strftime('%m'))
+                sysdd=int(datetime.now().strftime('%d'))
+                syshh=int(datetime.now().strftime('%H'))
+                sysmin=int(datetime.now().strftime('%M'))
+                sysss=int(datetime.now().strftime('%S'))
+                sysww=int(datetime.now().strftime('%w'))
+                if sysww==0:
+                    sysww=7
+                print("PI系統時間=",sysyy,'-',sysmm,'-',sysdd,' ',syshh,':',sysmin,':',sysss)
+                xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy
+                
+                sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
+                sum =sum % 256
+                input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
+                # print(input)
+                ser.write(input)
+                sleep(0.2)
+                print(globals._scanner.name,"node=",node, "校時完成")
 
         return status_code
 

@@ -131,12 +131,14 @@ def actionDoor(uid,userMode,relays):
 def openDoorWithRelays(relays):
     print('openDoor')
     if globals._scanner.name=="AR721":
-        AR721_R1_ON=ar721comm(1,'0x21','0x82')   #door relay on
-        AR721_R1_OFF=ar721comm(1,'0x21','0x83')  #door relay off
-        ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-        ser.write(AR721_R1_ON)
-        sleep(globals._device.opendoortime)
-        ser.write(AR721_R1_OFF)
+        nodesCount = globals._scanner.nodesCount
+        for node in range(nodesCount):
+            AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
+            AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
+            ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+            ser.write(AR721_R1_ON)
+            sleep(globals._device.opendoortime)
+            ser.write(AR721_R1_OFF)
     globals._relay.action(1,globals._device.opendoortime,0)
     for relay in relays:
         openRelay(int(relay))
@@ -146,13 +148,14 @@ def openDoorWithRelays(relays):
 def closeDoorWithRelays(relays):
     print('closeDoor')
     if globals._scanner.name=="AR721":
-        AR721_R2_ON=ar721comm(1,'0x21','0x85')   #alarm relay on
-        AR721_R2_OFF=ar721comm(1,'0x21','0x86')  #alarm relay off
-        ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-        ser.write(AR721_R2_ON)
-        sleep(globals._device.opendoortime)
-        ser.write(AR721_R2_OFF)
-  
+        nodesCount = globals._scanner.nodesCount
+        for node in range(nodesCount):
+            AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
+            AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
+            ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+            ser.write(AR721_R2_ON)
+            sleep(globals._device.opendoortime)
+            ser.write(AR721_R2_OFF)
     globals._relay.action(2,globals._device.opendoortime,0)
     for relay in relays:
         closeRelay(int(relay))

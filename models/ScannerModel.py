@@ -5,6 +5,7 @@ class ScannerModel:
     name = ''
     sname = ''
     baurate = ''
+    nodesCount = 1
     block = 1
     
     
@@ -14,6 +15,8 @@ class ScannerModel:
         cf.read("/home/ubuntu/hhinfo_PI/config.ini")
         self.sname = cf.get("ScannerConfig", "sname")
         self.baurate = cf.get("ScannerConfig", "baurate")
+        self.nodesCount = (int)(cf.get("ScannerConfig", "nodesCount",  fallback=1))
+
         try:
             ser = serial.Serial(self.sname, self.baurate, timeout=1)
             input=b'\x7e\x04\x01\x25\xdb\x01'
@@ -37,5 +40,6 @@ class ScannerModel:
         print("name = " + self.name)
         print("sname = " + self.sname)
         print("baurate = " + self.baurate)
+        print("nodesCount = " + self.nodesCount)
       
         
