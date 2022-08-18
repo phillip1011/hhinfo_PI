@@ -3,7 +3,7 @@ from time import sleep
 from datetime import datetime, timedelta
 import serial
 import globals 
-
+import threading
 
 
 
@@ -128,18 +128,32 @@ def actionDoor(uid,userMode,relays):
             return 0
 
 
+
+def ar721OpenDoor(node):
+    AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
+    AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
+    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+    ser.write(AR721_R1_ON)
+    sleep(globals._device.opendoortime)
+    ser.write(AR721_R1_OFF)
+
+def ar721CloseDoor(node):
+    AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
+    AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
+    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+    ser.write(AR721_R2_ON)
+    sleep(globals._device.opendoortime)
+    ser.write(AR721_R2_OFF)
+
 def openDoorWithRelays(relays):
     print('openDoor')
     if globals._scanner.name=="AR721":
         nodesCount = globals._scanner.nodesCount
         for x in range(nodesCount):
             node = x+1
-            AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
-            AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
-            ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-            ser.write(AR721_R1_ON)
-            sleep(globals._device.opendoortime)
-            ser.write(AR721_R1_OFF)
+            t = threading.Thread(target=ar721OpenDoor, args=(node,))
+            t.setDaemon(True)
+            t.start()
     globals._relay.action(1,globals._device.opendoortime,0)
     for relay in relays:
         openRelay(int(relay))
@@ -152,12 +166,9 @@ def closeDoorWithRelays(relays):
         nodesCount = globals._scanner.nodesCount
         for x in range(nodesCount):
             node = x+1
-            AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
-            AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
-            ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-            ser.write(AR721_R2_ON)
-            sleep(globals._device.opendoortime)
-            ser.write(AR721_R2_OFF)
+            t = threading.Thread(target=ar721CloseDoor, args=(node,))
+            t.setDaemon(True)
+            t.start()
     globals._relay.action(2,globals._device.opendoortime,0)
     for relay in relays:
         closeRelay(int(relay))
