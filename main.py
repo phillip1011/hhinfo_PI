@@ -34,19 +34,10 @@ if __name__=='__main__':
         t.start()
      
    
-  
-
-    #
-    if globals._scanner.name == 'AR721':
-        print('Start thread AR721')
-        t = threading.Thread(target=ar721.do_read_ar721)
-        t.setDaemon(True)
-        t.start()
-    elif globals._scanner.name =='R35C' :
-        print('Start thread R35C')
-        t = threading.Thread(target=r35c.do_read_r35c)
-        t.setDaemon(True)
-        t.start()
+    
+    t = threading.Thread(target=globals._scanner.doRead)
+    t.setDaemon(True)
+    t.start()
 
  
 

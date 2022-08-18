@@ -244,8 +244,60 @@ def chkcard(uid):
     
 
 
-# if __name__=='__main__':
-    # uid='4077189990'
-    # uid='1479304897'
-    # # uid='1111000125'
-    # chkcard(uid)
+
+def verifycard(uid):
+        print("____________chkcard_run__________________")
+        initData()
+        #取得Card資料
+        card = getCardByUid(uid)
+        if card == None:
+            print('找不到Card資料 => 非法卡')
+            log(uid,'非法卡','禁止進入',0)
+            return 0
+        
+        #取得Spcard資料
+        spcard = getSpcardByCustomerId(card[1])
+
+        if spcard == None :
+            print('找不到Spcard資料 => 找尋預約紀錄')
+            #判斷預約紀錄
+            nowBookingData = getNowBookingDataByCustomerId(card[1])
+            if nowBookingData == None:
+                if globals._device.doortype=='鐵捲門' :
+                    print('找不到預約紀錄 => 不開門 , 找尋超時紀錄')
+                    overTimeBookingData = getOverTimeBookingDataByCustomerId(card[1])
+                    if overTimeBookingData == None :
+                        print('找不到超時預約紀錄 => 不關門')
+                        log(uid,'合法卡','非預約時段',0)
+                    else:
+                        print('找到超時預約紀錄 => 關門')
+                        closeDoorWithRelays([3,4])
+                        log(uid,'合法卡','超時關門',1)
+                    return 0
+                else:
+                    log(uid,'合法卡','非預約時段',0)
+                    return 0
+            else:
+                #print('my _device id is:', globals._device.dev_id)
+                #print('bh.device id is:',nowBookingData[1])
+                authority_relay=[]
+                if globals._device.dev_id==nowBookingData[1] :#判斷是否為本機預約資料,用於公用門
+                    authority_relay = [3]
+                    aircontrol = nowBookingData[4]
+                    if aircontrol == '1':
+                        authority_relay.append(4)
+                actionDoorReturn = actionDoor(uid,'租借時段',authority_relay)
+        
+                
+            
+        else:
+            print("全區卡")
+            authority = spcard[2]
+            if authority == '':
+                authority_split=[]
+            else:
+                authority_split = authority.split(',')
+            print('authority_split : ',authority_split)
+            actionDoorReturn = actionDoor(uid,'全區卡',authority_split)
+            
+        

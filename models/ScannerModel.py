@@ -1,7 +1,11 @@
 import serial
 import configparser
 from time import sleep
+from nodes.AR721 import AR721
+from nodes.R35C import R35C
+
 class ScannerModel:
+    model = ''
     name = ''
     sname = ''
     baurate = ''
@@ -27,13 +31,17 @@ class ScannerModel:
             if output!=b'':
                 if output[0]==0x7e:
                     self.name="AR721"
+                    self.model = AR721()
                 else:
                     self.name="R35C"
+                    self.model = R35C()
             else:
                 self.name="R35C"
+                self.model = R35C()
         except Exception as n:
             print(n)
             self.name="None"
+            self.model = None
         self.show()
     def show(self):
         print("__________ScannerModel show__________")
