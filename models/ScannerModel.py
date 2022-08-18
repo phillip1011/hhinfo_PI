@@ -40,6 +40,6 @@ class ScannerModel:
         print("name = " + self.name)
         print("sname = " + self.sname)
         print("baurate = " + self.baurate)
-        print("nodesCount = " + self.nodesCount)
+        print("nodesCount = " , self.nodesCount)
       
         
