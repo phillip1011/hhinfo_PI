@@ -147,14 +147,15 @@ def ar721CloseDoor(node):
 
 def openDoorWithRelays(relays):
     print('openDoor')
+    globals._relay.action(1,globals._device.opendoortime,0)
     if globals._scanner.name=="AR721":
         nodesCount = globals._scanner.nodesCount
         for x in range(nodesCount):
             node = x+1
-            t = threading.Thread(target=ar721OpenDoor, args=(node,))
-            t.setDaemon(True)
-            t.start()
-    globals._relay.action(1,globals._device.opendoortime,0)
+            t6 = threading.Thread(target=ar721OpenDoor, args=(node,))
+            t6.setDaemon(True)
+            t6.start()
+            sleep(1)
     for relay in relays:
         openRelay(int(relay))
     
@@ -162,14 +163,15 @@ def openDoorWithRelays(relays):
 
 def closeDoorWithRelays(relays):
     print('closeDoor')
+    globals._relay.action(2,globals._device.opendoortime,0)
     if globals._scanner.name=="AR721":
         nodesCount = globals._scanner.nodesCount
         for x in range(nodesCount):
             node = x+1
-            t = threading.Thread(target=ar721CloseDoor, args=(node,))
-            t.setDaemon(True)
-            t.start()
-    globals._relay.action(2,globals._device.opendoortime,0)
+            t7 = threading.Thread(target=ar721CloseDoor, args=(node,))
+            t7.setDaemon(True)
+            t7.start()
+            sleep(1)
     for relay in relays:
         closeRelay(int(relay))
 
