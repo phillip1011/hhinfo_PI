@@ -7,9 +7,8 @@ from time import sleep
 
 def get_ovpn_file(sHostName,vpnfile):
     with pysftp.Connection(host=sHostName , username='ovpn', private_key="/home/ubuntu/hhinfo_PI/id_rsa") as sftp:
-        # 檔案下載 sftp.get('遠端檔案位置', '本機檔案位置')
+        # 檔案下載 sftp.get('home\ovpn\遠端檔案位置', '本機檔案位置')
         sftp.get(vpnfile ,"/home/ubuntu/hhinfo_PI/" + vpnfile)
-
 
 def pingServer(serverip):
     response_s = os.system("ping -c 1 " + serverip)
@@ -42,13 +41,18 @@ def main(keepalive):
                 mac=mac[0:17]
                 vpnfile = str(mac.replace(":",""))
                 vpnfile = vpnfile+".ovpn"
-                if os.path.isfile(vpnfile):
+                if os.path.isfile(vpnfile) and os.path.getsize(vpnfile) != 0:
                     #wlog("VPN登入檔案存在, 準備登錄VPN Server","a+")
                     print("VPN登入檔案存在, 準備登錄VPN Server")
                 else:
                     wlog("下載VPN登入檔案中,請等待","a+")
-                    get_ovpn_file(globals._server.serverip,vpnfile)
-                    wlog("下載VPN登入檔案,完成! , 準備登錄VPN Server","a+")
+                    try:
+                        get_ovpn_file(globals._server.serverip,vpnfile)
+                        wlog("下載VPN登入檔案,完成! , 準備登錄VPN Server","a+")
+                    except:
+                        if os.path.getsize(vpnfile) == 0:      #因為FTP失敗仍會產生檔案名稱,故在此判斷刪除檔案
+                            os.system("rm " + vpnfile )                        
+                            wlog("下載VPN登入檔案失敗!","a+")
                 os.system("sudo killall openvpn")
                 sleep(1)
                 os.system("sudo -b openvpn --config /home/ubuntu/hhinfo_PI/" +vpnfile)
