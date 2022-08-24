@@ -55,24 +55,38 @@ def verifyServerIp(reviceServerIp):
         return False
     return True
 
-def ar721action(gateno,dooropentime,waittime):
 
+def ar721OpenDoor(node,opentime,waittime):
+    AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
+    AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
     if waittime!=0:
         time.sleep(waittime)
-
     ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-    AR721R1ON=ar721comm(1,'0x21','0x82')   #door relay on
-    AR721R1OFF=ar721comm(1,'0x21','0x83')  #door relay off
-    AR721R2ON=ar721comm(1,'0x21','0x85')   #alarm relay on
-    AR721R2OFF=ar721comm(1,'0x21','0x86')  #alarm relay off 
-    if(gateno ==1):                
-        ser.write(AR721R1ON)
-        time.sleep(dooropentime)
-        ser.write(AR721R1OFF)
-    else:
-        ser.write(AR721R2ON)
-        time.sleep(dooropentime)
-        ser.write(AR721R2OFF)
+    ser.write(AR721_R1_ON)
+    sleep(opentime)
+    ser.write(AR721_R1_OFF)
+
+def ar721CloseDoor(node,opentime,waittime):
+    AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
+    AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
+    if waittime!=0:
+        time.sleep(waittime)
+    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+    ser.write(AR721_R2_ON)
+    sleep(opentime)
+    ser.write(AR721_R2_OFF)
+
+def ar721action(gateno,dooropentime,waittime):
+    nodesCount = globals._scanner.nodesCount
+    for x in range(nodesCount):
+        node = x+1
+        if(gateno ==1):
+            t = threading.Thread(target=ar721OpenDoor, args=(node, dooropentime, waittime))
+        else:
+            t = threading.Thread(target=ar721CloseDoor, args=(node, dooropentime, waittime))
+        t.setDaemon(True)
+        t.start()
+        sleep(1)
 
 @app.route('/api/v3/remote/control', methods=['POST'])
 def api01():
@@ -98,11 +112,9 @@ def api01():
             opentime = revice_data["relay"][value]["opentime"]
             waittime = revice_data["relay"][value]["waittime"]
             if isinstance(gateno,int) and isinstance(opentime,int) and isinstance(waittime,int):
+                globals._relay.action(gateno,opentime,waittime)
                 if (gateno == 1 or gateno ==2) and globals._scanner.name == 'AR721':
-                    t = threading.Thread(target=ar721action, args=(gateno,opentime,waittime))
-                    t.start()
-                else:
-                    globals._relay.action(gateno,opentime,waittime)
+                    ar721action(gateno,opentime,waittime)
         sleep(0.1)
         rt = {
             "controlip": globals._device.localip,

@@ -90,7 +90,7 @@ def monitor_sensor():
         # print('Sensor New Status :' , new_sxstatus)
 
         if old_rxstatus != new_rxstatus or old_sxstatus != new_sxstatus:
-            if old_sxstatus[3] == 0 and new_sxstatus[3] == 1 and globals._scanner.name == 'R35C' :
+            if old_sxstatus[3] == 0 and new_sxstatus[3] == 1 :
                 globals._relay.action(1,globals._device.opendoortime,0)
             print('tigger scode')
             scode()
