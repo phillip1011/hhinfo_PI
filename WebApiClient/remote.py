@@ -48,7 +48,7 @@ def scode():
   
     rxstatus = globals._relay.readRelays()
     sxstatus = globals._relay.readSensors()
-
+   
     api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) +"/api/v1/remote/scode"
     postdata = {
         'token' : globals._server.token,
@@ -79,7 +79,7 @@ def monitor_sensor():
         old_sxstatus = globals._relay.readSensors().copy()
 
        
-        # print('Relay Old Status :' , old_rxstatus)
+        # print('Relay Old Status :' , old_rxstatus)test
         # print('Sensor Old Status :' , old_sxstatus)
         time.sleep(0.5)
 
