@@ -20,6 +20,7 @@ def pingServer(serverip):
 def pingVPNServer(VPNserverip):
     response_s = os.system("ping -c 1 " + VPNserverip)
     if response_s == 0:
+        response_s=os.system("ip addr |grep tun0")
         return response_s
     else:
         return response_s

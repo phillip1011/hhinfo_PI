@@ -37,6 +37,31 @@ def updatetime():
             )
                 #print (update_time.time_tuple)
             update_time.update()
+            if globals._scanner.name=="AR721":
+                nodesCount = globals._scanner.nodesCount
+                for x in range(nodesCount):
+                    node = x+1
+                    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+                    sysyy=int(datetime.now().strftime('%y'))
+                    sysmm=int(datetime.now().strftime('%m'))
+                    sysdd=int(datetime.now().strftime('%d'))
+                    syshh=int(datetime.now().strftime('%H'))
+                    sysmin=int(datetime.now().strftime('%M'))
+                    sysss=int(datetime.now().strftime('%S'))
+                    sysww=int(datetime.now().strftime('%w'))
+                    if sysww==0:
+                        sysww=7
+                    print("PI系統時間=",sysyy,'-',sysmm,'-',sysdd,' ',syshh,':',sysmin,':',sysss)
+                    xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy
+                    
+                    sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
+                    sum =sum % 256
+                    input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
+                    # print(input)
+                    ser.write(input)
+                    sleep(0.2)
+                    print(globals._scanner.name,"node=",node, "校時完成")
+
         else : 
             print("Get server/api/v1/data/time 失敗. 伺服器回傳狀態 : ",response.status_code)
     except:
