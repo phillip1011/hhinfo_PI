@@ -107,9 +107,8 @@ def getOverTimeBookingDataByCustomerId(customer_id):
 
 def actionDoor(uid,userMode,relays):
     if globals._device.doortype != '鐵捲門' :
-        openDoorWithRelays(relays)
+        openDoorWithRelays(relays,userMode)
         log(uid,'合法卡',userMode+'-開門',1)
-        sound.openDoorSound()
     else : 
         sxstatus = globals._relay.readSensors()
         #S1=1 => 門狀態是關閉
@@ -118,16 +117,14 @@ def actionDoor(uid,userMode,relays):
         print('s1 status =',s1)
         if s1==1:
             # 開門
-            openDoorWithRelays(relays)
-            log(uid,'合法卡',userMode+'-開門',1)
-            sound.openDoorSound()
+            openDoorWithRelays(relays,userMode)
+            log(uid,'合法卡',userMode+'-鐵卷門開門',1)
             return 1
         else:
             # 關門
-            closeDoorWithRelays(relays)
-            log(uid,'合法卡',userMode+'-關門',1)
+            closeDoorWithRelays(relays,userMode)
+            log(uid,'合法卡',userMode+'-鐵卷門關門',1)
             return 0
-
 
 
 def ar721OpenDoor(node):
@@ -146,7 +143,7 @@ def ar721CloseDoor(node):
     sleep(globals._device.opendoortime)
     ser.write(AR721_R2_OFF)
 
-def openDoorWithRelays(relays):
+def openDoorWithRelays(relays,userMode):
     print('openDoor')
     globals._relay.action(1,globals._device.opendoortime,0)
     if globals._scanner.name=="AR721":
@@ -157,12 +154,15 @@ def openDoorWithRelays(relays):
             t6.setDaemon(True)
             t6.start()
             sleep(1)
+    openDoorSound(userMode)
     for relay in relays:
         openRelay(int(relay))
     
 
 
-def closeDoorWithRelays(relays):
+
+    
+def closeDoorWithRelays(relays,userMode):
     print('closeDoor')
     globals._relay.action(2,globals._device.opendoortime,0)
     if globals._scanner.name=="AR721":
@@ -173,20 +173,36 @@ def closeDoorWithRelays(relays):
             t7.setDaemon(True)
             t7.start()
             sleep(1)
+    closeDoorSound(userMode)
     for relay in relays:
         closeRelay(int(relay))
 
-
+def openDoorSound(userMode):
+    if userMode=='全區卡':
+        sound.spcardOpenDoorSound()
+    else:
+        sound.openDoorSound()
+        
+def closeDoorSound(userMode):
+    if userMode=='全區卡':
+        sound.spcardCloseDoorSound()
+    else:
+        sound.closeDoorSound()
 
 def openRelay(relayNo):
     print('openRelay : ',relayNo)
     globals._relay.action(relayNo,255,0)
-
+    if relayNo==3:
+        sound.openR3Sound()
+    elif relayNo==4:
+        sound.openR4Sound()
 def closeRelay(relayNo):
     print('closeRelay : ',relayNo)
     globals._relay.action(relayNo,0,0)
-    
-
+    if relayNo==3:
+        sound.closeR3Sound()
+    elif relayNo==4:
+        sound.closeR4Sound()
 def log(uid,auth,process,result):
     conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
     c=conn.cursor()
@@ -226,10 +242,16 @@ def chkcard(uid):
                     log(uid,'合法卡','非預約時段',0)
                     sound.nonAuthCard()
                 else:
-                    print('找到超時預約紀錄 => 關門')
-                    closeDoorWithRelays([3,4])
-                    log(uid,'合法卡','超時關門',1)
-                    sound.closeDoorSound()
+                    sxstatus = globals._relay.readSensors()
+                    #S1=1 => 門狀態是關閉
+                    #S1=0 => 門狀態是開啟
+                    s1=sxstatus[0]
+                    if s1==0:
+                        print('找到超時預約紀錄 => 關門')
+                        closeDoorWithRelays([3,4],'一般卡')
+                        log(uid,'合法卡','超時關門',1)
+                    else:
+                        sound.nonAuthCard()    
                 return 0
             else:
                 log(uid,'合法卡','非預約時段',0)
@@ -257,7 +279,7 @@ def chkcard(uid):
             authority_split = authority.split(',')
         print('authority_split : ',authority_split)
         actionDoorReturn = actionDoor(uid,'全區卡',authority_split)
-        sound.spcardOpenDoorSound()
+
         
     
     

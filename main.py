@@ -10,6 +10,7 @@ import upload
 import models.r35c as r35c
 import models.ar721 as ar721
 import globals 
+import sound as sound
 
 GPIO.setwarnings(False)
 
@@ -39,16 +40,19 @@ if __name__=='__main__':
     #
     if globals._scanner.name == 'AR721':
         print('Start thread AR721')
+        sound.ar721ConnectSound()
         t = threading.Thread(target=ar721.do_read_ar721)
         t.setDaemon(True)
         t.start()
     elif globals._scanner.name =='R35C' :
         print('Start thread R35C')
+        sound.r35cConnectSound()
         t = threading.Thread(target=r35c.do_read_r35c)
         t.setDaemon(True)
         t.start()
-
- 
+    elif globals._scanner.name =='None' :
+        print('no scanner found')
+        sound.scannerNotConnect()
 
    
     #loop for report
@@ -68,5 +72,6 @@ if __name__=='__main__':
 
     #start API flask
     
-   
+    sound.sysFinishSound()
     api.run()
+    

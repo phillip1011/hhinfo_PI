@@ -1,5 +1,4 @@
 import os
-#import globals
 
 def sysStartSound():
     print("系統開機")
@@ -10,17 +9,15 @@ def sysLoginSrvSound():
 def sysLoginVpnSound():
     print("VPN伺服器連線成功")
     os.system("aplay wav/sysLoginVpnSound.wav")
-    #sleep(10)
-def sysScannerSound(_scanner):
-    if _scanner=='AR721':
-        print("AR721讀卡機連線成功")
-        os.system("aplay wav/ar721ConnectSound.wav")
-    elif _scanner=='R35C':
-        print("R35C讀卡機連線成功")
-        os.system("aplay wav/r35cConnectSound.wav")
-    else:
-        print("讀卡機未連線")
-        os.system("aplay wav/scannerNotConnect.wav")
+def ar721ConnectSound():
+    print("AR721讀卡機連線成功")
+    os.system("aplay wav/ar721ConnectSound.wav")
+def r35cConnectSound():
+    print("R35C讀卡機連線成功")
+    os.system("aplay wav/r35cConnectSound.wav")
+def scannerNotConnect():
+    print("讀卡機未連線")
+    os.system("aplay wav/scannerNotConnect.wav")
 def sysFinishSound():
     print("開機完成")
     os.system("aplay wav/sysFinishSound.wav")

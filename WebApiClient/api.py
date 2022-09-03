@@ -14,6 +14,7 @@ from time import sleep
 import serial
 import struct
 import globals
+import sound as sound
 
 print("____________api.py run______________________")
 app = flask.Flask(__name__)
@@ -126,6 +127,21 @@ def api01():
             status= 203,
             mimetype='application/json'
         )
+        if gateno==1:
+            sound.remoteOpenDoorSound()
+        elif gateno==2:
+            sound.remoteCloseDoorSound()
+        elif gateno==3:
+            if opentime==255:
+                sound.remoteOpenR3Sound()
+            elif opentime==0:
+                sound.remoteCloseR3Sound()
+        elif gateno==4:
+            if opentime==255:
+                sound.remoteOpenR4Sound()
+            elif opentime==0:
+                sound.remoteCloseR4Sound()
+                
         return response
 
     except:
