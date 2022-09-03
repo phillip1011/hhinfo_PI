@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import json
 import requests
-import datetime
+from datetime import datetime 
 import WebApiClient.login_internet as login_internet 
 import WebApiClient.update_time as update_time
 import sqlite3
@@ -9,6 +9,11 @@ import configparser
 import globals
 import subprocess
 import threading
+import sound as sound
+import serial
+import os
+from time import sleep
+
 
 def initGlobals():
     globals.initializeWithOutGPIO()
@@ -25,7 +30,7 @@ def updatetime():
             print("Get server/api/v1/data/time 成功.")
             r = response.json()
             time = r['data']
-            timeformat =  datetime.datetime.strptime(time,"%Y-%m-%d %H:%M:%S")
+            timeformat =  datetime.strptime(time,"%Y-%m-%d %H:%M:%S")
             update_time.time_tuple = (
                 int(timeformat.strftime('%Y')),
                 int(timeformat.strftime('%m')),
@@ -119,13 +124,15 @@ if __name__=='__main__':
     serverip = cf.get("ServerConfig", "serverip")
     VPNserverip = cf.get("ServerConfig", "VPNserverip")
     forceVPN = cf.get("ServerConfig", "forceVPN")
+    os.system("amixer -c 0 set Headphone 100%")  #調整系統音量到100%
+    sound.sysStartSound()
 
     
     initGlobals()
     if forceVPN == 'true':
         print('強制啟用VPN')
         login_internet.main(False)
+        sound.sysLoginVpnSound()
 
-    
     updatetime()
     updatedevice()

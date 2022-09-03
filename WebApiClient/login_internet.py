@@ -3,6 +3,7 @@ import pysftp
 import globals
 from datetime import datetime
 from time import sleep
+import sound as sound
 
 
 def get_ovpn_file(sHostName,vpnfile):
@@ -32,6 +33,8 @@ def main(keepalive):
         if pingServer(globals._server.serverip) ==0:    #PING WEB SRV
             #wlog("PING "+serverip+" WEB主機回應成功","w+")
             print("PING "+globals._server.serverip+" WEB主機回應成功")
+            if keepalive==False:
+                sound.sysLoginSrvSound()
             if pingVPNServer(globals._server.VPNserverip) ==0:     #PING  VPN SRV
                 #wlog("PING "+VPNserverip+" VPN主機回應成功","a+")
                 print("PING "+globals._server.VPNserverip+" VPN主機回應成功")

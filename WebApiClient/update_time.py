@@ -41,7 +41,7 @@ def _linux_set_time(time_tuple):
                     ("tv_nsec", ctypes.c_long)]
 
     librt = ctypes.CDLL(ctypes.util.find_library("rt"))
-    print("OK-01")
+    print("ubuntu time update OK")
 
     ts = timespec()
     ts.tv_sec = int( time.mktime( datetime.datetime( *time_tuple[:6]).timetuple() ) )
@@ -51,7 +51,7 @@ def _linux_set_time(time_tuple):
 
 
 def update():
-    print(sys.platform)
+    #print(sys.platform)
     if sys.platform=='linux':
         _linux_set_time(time_tuple)
 

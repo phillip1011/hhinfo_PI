@@ -4,8 +4,7 @@ from datetime import datetime, timedelta
 import serial
 import globals 
 import threading
-
-
+import sound as sound
 
 def initData():
     global _today
@@ -110,6 +109,7 @@ def actionDoor(uid,userMode,relays):
     if globals._device.doortype != '鐵捲門' :
         openDoorWithRelays(relays)
         log(uid,'合法卡',userMode+'-開門',1)
+        sound.openDoorSound()
     else : 
         sxstatus = globals._relay.readSensors()
         #S1=1 => 門狀態是關閉
@@ -120,6 +120,7 @@ def actionDoor(uid,userMode,relays):
             # 開門
             openDoorWithRelays(relays)
             log(uid,'合法卡',userMode+'-開門',1)
+            sound.openDoorSound()
             return 1
         else:
             # 關門
@@ -206,6 +207,7 @@ def chkcard(uid):
     if card == None:
         print('找不到Card資料 => 非法卡')
         log(uid,'非法卡','禁止進入',0)
+        sound.nonRegisterCard()
         return 0
     
     #取得Spcard資料
@@ -222,13 +224,16 @@ def chkcard(uid):
                 if overTimeBookingData == None :
                     print('找不到超時預約紀錄 => 不關門')
                     log(uid,'合法卡','非預約時段',0)
+                    sound.nonAuthCard()
                 else:
                     print('找到超時預約紀錄 => 關門')
                     closeDoorWithRelays([3,4])
                     log(uid,'合法卡','超時關門',1)
+                    sound.closeDoorSound()
                 return 0
             else:
                 log(uid,'合法卡','非預約時段',0)
+                sound.nonAuthCard()
                 return 0
         else:
             #print('my _device id is:', globals._device.dev_id)
@@ -252,6 +257,7 @@ def chkcard(uid):
             authority_split = authority.split(',')
         print('authority_split : ',authority_split)
         actionDoorReturn = actionDoor(uid,'全區卡',authority_split)
+        sound.spcardOpenDoorSound()
         
     
     
