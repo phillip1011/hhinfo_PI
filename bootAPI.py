@@ -66,9 +66,11 @@ def updatetime():
                     ser.write(input)
                     sleep(0.2)
                     print(globals._scanner.name,"node=",node, "校時完成")
+            return response.status_code        
 
         else : 
             print("Get server/api/v1/data/time 失敗. 伺服器回傳狀態 : ",response.status_code)
+            return response.status_code
     except:
         print("Get server/api/v1/data/time 錯誤.更新時間失敗")
 
@@ -132,7 +134,16 @@ if __name__=='__main__':
     if forceVPN == 'true':
         print('強制啟用VPN')
         login_internet.main(False)
-        sound.sysLoginVpnSound()
+        if os.system("ip addr |grep tun0")==0:
+            sound.sysLoginVpnSound()
 
-    updatetime()
-    updatedevice()
+    while True:
+        if os.system("ping -c 1 " + serverip)==0:
+            if updatetime()==200:
+                updatedevice()
+                print("系統時間及設備更新完成")
+                break
+        else:
+            sound.bootUpdateRetry()
+            sleep(300)
+            continue

@@ -1,14 +1,14 @@
 import os
 from datetime import datetime
 
-def closeTime():
+def spcardCloseTime():
     today=str(datetime.now().strftime('%Y-%m-%d'))
     time=str(datetime.now().strftime('%H%M%S'))
     
     if int(time[2:4])<=30:
         playfile='T'+str(time[0:2])+'30.wav'
     else:
-        playfile='T'+str(time[0:2])+'00.wav'
+        playfile='T'+str(int(time[0:2])+1)+'00.wav'
     #print('playfile : ' , playfile)
     os.system("aplay wav/"+ playfile)
 
@@ -34,12 +34,17 @@ def scannerNotConnect():
 def sysFinishSound():
     print("開機完成")
     os.system("aplay wav/sysFinishSound.wav")
-
+def bootUpdateRetry():
+    print("系統時間及設備更新失敗,5分鐘後重試")
+    os.system("aplay wav/bootUpdateRetry.wav")
+def bootUpdateFinish():
+    print("系統時間及設備更新完成")
+    os.system("aplay wav/bootUpdateFinish.wav")
 
 def spcardOpenDoorSound():
     print("刷卡成功 全區卡,己開門 臨時供電到 (48組時間")
     os.system("aplay wav/spcardOpenDoorSound.wav")
-    closeTime()
+    spcardCloseTime()
 def spcardCloseDoorSound():
     print("刷卡成功 全區卡, 鐵卷門關閉中,請注意安全, 請勿任意穿越鐵卷門下方")
     os.system("aplay wav/spcardCloseDoorSound.wav")
@@ -80,14 +85,14 @@ def remoteCloseDoorSound():
 def remoteOpenR3Sound():
     print("遠端操作 己開啟電燈電源,請開啟電燈開關,臨時供電到 (48組時間")
     os.system("aplay wav/remoteOpenR3Sound.wav")
-    closeTime()
+    spcardCloseTime()
 def remoteCloseR3Sound():
     print("遠端操作 己關閉電燈電源")
     os.system("aplay wav/remoteCloseR3Sound.wav")
 def remoteOpenR4Sound():
     print("遠端操作 己開啟冷氣電源,請開啟電燈開關,臨時供電到 (48組時間")
     os.system("aplay wav/remoteOpenR4Sound.wav")
-    closeTime()
+    spcardCloseTime()
 def remoteCloseR4Sound():
     print("遠端操作 己關閉冷氣電源")
     os.system("aplay wav/remoteCloseR4Sound.wav")
