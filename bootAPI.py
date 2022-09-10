@@ -199,7 +199,8 @@ def updateLinuxTime():
                 break
             else:
                 sound.bootUpdateRetry()
-                sleep(180)
+                sleep(300)
+                os.system("sudo systemctl restart hhinfo_main.service")
                 continue
 
 if __name__=='__main__':
@@ -222,4 +223,4 @@ if __name__=='__main__':
         if os.system("ip addr |grep tun0")==0:
             sound.sysLoginVpnSound()
 
-    os.system("sudo systemctl start hhinfo_main.service")
+    os.system("sudo systemctl restart hhinfo_main.service")
