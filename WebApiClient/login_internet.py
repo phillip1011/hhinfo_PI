@@ -63,6 +63,8 @@ def main(keepalive):
                 sleep(10)
                 if pingVPNServer(globals._server.VPNserverip) ==0:
                     wlog("登入VPN成功","a+")
+                    if keepalive==False:
+                        sound.sysLoginVpnSound()
                 else:
                     wlog("登入VPN失敗","a+")
 
@@ -70,6 +72,8 @@ def main(keepalive):
             os.system("sudo killall openvpn") #防止不正常斷線, VPN卡Threading
             #wlog("PING "+serverip+" WEB主機回應失敗----結束","a+")
             print("PING "+globals._server.serverip+" WEB主機回應失敗----結束")
+            if keepalive==False:
+                sound.sysLoginSrvFailSound()
         globals.initDevice()
         if keepalive==True:
             sleep(60*1)

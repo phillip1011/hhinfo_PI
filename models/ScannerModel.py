@@ -7,6 +7,7 @@ class ScannerModel:
     baurate = ''
     nodesCount = 1
     block = 1
+    nodetime=''
     
     
   
@@ -19,7 +20,7 @@ class ScannerModel:
 
         try:
             ser = serial.Serial(self.sname, self.baurate, timeout=1)
-            input=b'\x7e\x04\x01\x25\xdb\x01'
+            input=b'\x7e\x04\x01\x24\xda\xff'    #Soyal 7系統讀取時間指令
             ser.write(input)
             sleep(0.2)
             output=ser.read(64)
@@ -27,6 +28,14 @@ class ScannerModel:
             if output!=b'':
                 if output[0]==0x7e:
                     self.name="AR721"
+                    self.nodetime=(
+                        "20" + str(output[11]).zfill(2) +
+                         "-" + str(output[10]).zfill(2) +
+                         "-" + str(output[9]).zfill(2) +
+                         " " + str(output[7]).zfill(2) + 
+                         ":" + str(output[6]).zfill(2) +
+                         ":" + str(output[5]).zfill(2)
+                    )
                 else:
                     self.name="R35C"
             else:
@@ -41,5 +50,6 @@ class ScannerModel:
         print("sname = " + self.sname)
         print("baurate = " + self.baurate)
         print("nodesCount = " , self.nodesCount)
+        print("nodesTime = " , self.nodetime)
       
         

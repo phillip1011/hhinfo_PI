@@ -42,7 +42,7 @@ def update721time():
         ser.write(input)
         sleep(0.2)
         print(globals._scanner.name,"node=",node, "校時完成")
-
+    sound.scannerUpdateTimeFinish()
 def updatetime():
     path = '/api/v1/data/time'
     headers = {'Content-Type': 'application/json'}
@@ -53,8 +53,6 @@ def updatetime():
             print("Get server/api/v1/data/time 成功.")
             r = response.json()
             Srvtime = r['data']
-            #timeformat =  datetime.strptime(time,"%Y-%m-%d %H:%M:%S")
-            #update_time.time_tuple = (
             time_tuple = (
                 int(Srvtime[0:4]),
                 int(Srvtime[5:7]),
@@ -64,9 +62,6 @@ def updatetime():
                 int(Srvtime[17:19]),
                 0, # Millisecond
             )
-                #print (update_time.time_tuple)
-            #update_time.update()
-            #print("my time tuple ",time_tuple)
             _linux_set_time(time_tuple)
 
             if globals._scanner.name=="AR721":
@@ -188,7 +183,7 @@ def updateLinuxTime():
     while True:
         if updatetime()==200:
             updatedevice()
-            sound.bootUpdateFinish()
+            sound.sysTimeUpdateFinish()
             break
         else:
             if globals._scanner.name=="AR721":
@@ -196,9 +191,10 @@ def updateLinuxTime():
                 time_tuple=read_721time('0x24')
                 _linux_set_time(time_tuple)
                 print("Get 721 RTC and update to Linux Finish")
+                sound.sysTimeUpdateFinish()
                 break
             else:
-                sound.bootUpdateRetry()
+                sound.sysTimeUpdateFail()
                 sleep(300)
                 os.system("sudo systemctl restart hhinfo_main.service")
                 continue
@@ -220,7 +216,7 @@ if __name__=='__main__':
     if forceVPN == 'true':
         print('強制啟用VPN')
         login_internet.main(False)
-        if os.system("ip addr |grep tun0")==0:
-            sound.sysLoginVpnSound()
+#        if os.system("ip addr |grep tun0")==0:
+#            sound.sysLoginVpnSound()
 
     os.system("sudo systemctl restart hhinfo_main.service")

@@ -19,9 +19,15 @@ def sysStartSound():
 def sysLoginSrvSound():
     print("伺服器主機連線成功")
     os.system("aplay wav/sysLoginSrvSound.wav")
+def sysLoginSrvFailSound():
+    print("伺服器主機連線失敗")
+    os.system("aplay wav/sysLoginSrvFailSound.wav")
 def sysLoginVpnSound():
     print("VPN伺服器連線成功")
     os.system("aplay wav/sysLoginVpnSound.wav")
+def sysLoginVpnFailSound():
+    print("VPN伺服器連線失敗")
+    os.system("aplay wav/sysLoginVpnFailSound.wav")
 def ar721ConnectSound():
     print("AR721讀卡機連線成功")
     os.system("aplay wav/ar721ConnectSound.wav")
@@ -35,11 +41,18 @@ def sysFinishSound():
     print("開機完成")
     os.system("aplay wav/sysFinishSound.wav")
 def bootUpdateRetry():
-    print("系統時間及設備更新失敗,5分鐘後重試")
+    print("系統時間更新失敗,5分鐘後重試")
     os.system("aplay wav/bootUpdateRetry.wav")
-def bootUpdateFinish():
-    print("系統時間及設備更新完成")
-    os.system("aplay wav/bootUpdateFinish.wav")
+def sysTimeUpdateFinish():
+    print("系統時間更新完成")
+    os.system("aplay wav/sysTimeUpdateFinish.wav")
+def scannerUpdateTimeFinish():
+    print("讀卡機時間更新完成")
+    os.system("aplay wav/scannerUpdateTimeFinish.wav")
+def scannerUpdateTimeFail():
+    print("讀卡機時間更新失敗")
+    os.system("aplay wav/scannerUpdateTimeFail.wav")
+
 
 def spcardOpenDoorSound():
     print("刷卡成功 全區卡,己開門 臨時供電到 (48組時間")
