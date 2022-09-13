@@ -74,7 +74,7 @@ def main(keepalive):
             print("PING "+globals._server.serverip+" WEB主機回應失敗----結束")
             if keepalive==False:
                 sound.sysLoginSrvFailSound()
-        globals.initDevice()
+        #globals.initDevice()
         if keepalive==True:
             sleep(60*1)
         else:

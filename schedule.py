@@ -12,7 +12,7 @@ def initGlobals():
     globals.initRelay()
     globals.initDevice()
     globals._relay.setupGPIO()
-    globals.initScanner()
+    #globals.initScanner()    #不能和ar721.do_read_ar721同時跑, ser會誤判
 
 def chkcard():
     if globals._device.mode =='手動':
