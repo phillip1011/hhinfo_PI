@@ -30,9 +30,6 @@ def criteriaRangeId(time):
         return str(time[0:2])+':00'
 
 
-def initGlobals():
-    globals.initialize() 
-
 def ar721comm(node,func,data):
     xor=255^node^int(func,16)^int(data,16)
     sum=node+int(func,16)+int(data,16)+xor

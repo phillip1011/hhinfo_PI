@@ -374,7 +374,7 @@ def apiDeviceDate():
     conn.close()
     status_code = flask.Response(status=203)
 
-    globals.initialize() 
+    globals.initDevice() 
 
     return status_code
   

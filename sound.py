@@ -14,7 +14,7 @@ def spcardCloseTime():
 
 
 def sysStartSound():
-    print("系統開機")
+    print("系統開機",datetime.now())
     os.system("aplay wav/sysStartSound.wav")
 def sysLoginSrvSound():
     print("伺服器主機連線成功")
@@ -38,7 +38,7 @@ def scannerNotConnect():
     print("讀卡機未連線")
     os.system("aplay wav/scannerNotConnect.wav")
 def sysFinishSound():
-    print("開機完成")
+    print("開機完成",datetime.now())
     os.system("aplay wav/sysFinishSound.wav")
 def bootUpdateRetry():
     print("系統時間更新失敗,5分鐘後重試")

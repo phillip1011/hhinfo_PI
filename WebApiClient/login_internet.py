@@ -4,6 +4,7 @@ import globals
 from datetime import datetime
 from time import sleep
 import sound as sound
+import subprocess
 
 
 def get_ovpn_file(sHostName,vpnfile):
@@ -12,34 +13,34 @@ def get_ovpn_file(sHostName,vpnfile):
         sftp.get(vpnfile ,"/home/ubuntu/hhinfo_PI/" + vpnfile)
 
 def pingServer(serverip):
-    response_s = os.system("ping -c 1 " + serverip)
-    if response_s == 0:
-        return response_s
-    else:
-        return response_s
+    try:
+        serverip=str(serverip)
+        p = subprocess.check_output(["ping", "-c", "1", serverip])
+        print("網頁伺服器連線正常",datetime.now())
+        return 0
+    except subprocess.CalledProcessError:
+        print("網頁伺服器連線失敗",datetime.now())
+        return
+    
 
 def pingVPNServer(VPNserverip):
-    response_s = os.system("ping -c 1 " + VPNserverip)
-    if response_s == 0:
-        response_s=os.system("ip addr |grep tun0")
-        return response_s
-    else:
-        return response_s
+    try:
+        VPNserverip=str(VPNserverip)
+        p = subprocess.check_output(["ping", "-c", "1", VPNserverip])
+        print("VPN伺服器連線正常",datetime.now())
+        return 0
+    except subprocess.CalledProcessError:
+        print("VPN伺服器連線失敗",datetime.now())
+        return
 
 def main(keepalive):
     # print(serverip)
     # print(VPNserverip)
     while True:
         if pingServer(globals._server.serverip) ==0:    #PING WEB SRV
-            #wlog("PING "+serverip+" WEB主機回應成功","w+")
-            print("PING "+globals._server.serverip+" WEB主機回應成功")
             if keepalive==False:
                 sound.sysLoginSrvSound()
-            if pingVPNServer(globals._server.VPNserverip) ==0:     #PING  VPN SRV
-                #wlog("PING "+VPNserverip+" VPN主機回應成功","a+")
-                print("PING "+globals._server.VPNserverip+" VPN主機回應成功")
-            else:
-                #wlog("PING "+VPNserverip+" 嘗試登入VPN主機","a+")
+            if pingVPNServer(globals._server.VPNserverip) !=0:     #PING  VPN SRV
                 print("PING "+globals._server.VPNserverip+" 嘗試登入VPN主機")
                 mac=open('/sys/class/net/eth0/address').readline()
                 mac=mac[0:17]
@@ -70,11 +71,8 @@ def main(keepalive):
 
         else:
             os.system("sudo killall openvpn") #防止不正常斷線, VPN卡Threading
-            #wlog("PING "+serverip+" WEB主機回應失敗----結束","a+")
-            print("PING "+globals._server.serverip+" WEB主機回應失敗----結束")
             if keepalive==False:
                 sound.sysLoginSrvFailSound()
-        #globals.initDevice()
         if keepalive==True:
             sleep(60*1)
         else:
