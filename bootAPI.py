@@ -207,7 +207,7 @@ if __name__=='__main__':
     serverip = cf.get("ServerConfig", "serverip")
     VPNserverip = cf.get("ServerConfig", "VPNserverip")
     forceVPN = cf.get("ServerConfig", "forceVPN")
-    os.system("amixer -c 0 set Headphone 100%")  #調整系統音量到100%
+    os.system("amixer -c 0 set Headphone 90%")  #調整系統音量到100%
     sound.sysStartSound()
 
     
