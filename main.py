@@ -5,7 +5,7 @@ import serial
 import WebApiClient.login_internet as login_internet
 import WebApiClient.api as api
 import WebApiClient.remote as remote
-
+import WebApiClient.updatetime as updatetime
 import upload    
 import models.r35c as r35c
 import models.ar721 as ar721
@@ -16,13 +16,11 @@ GPIO.setwarnings(False)
 
 
 def initGlobals():
-    globals.initialize() 
+    globals.initialize()
     globals._relay.setupGPIOandInit()
 
 
 
-
-    
 
 if __name__=='__main__':
     #loop for change relay off
@@ -34,27 +32,28 @@ if __name__=='__main__':
         tVPN.setDaemon(True)
         tVPN.start()
      
-   
-  
-
-    #
-    if globals._scanner.name == 'AR721':
+    if globals._scanner.scannerName == 'AR721':
         print('Start thread AR721')
         sound.ar721ConnectSound()
         t = threading.Thread(target=ar721.do_read_ar721)
         t.setDaemon(True)
         t.start()
-    elif globals._scanner.name =='R35C' :
+    elif globals._scanner.scannerName =='R35C' :
         print('Start thread R35C')
         sound.r35cConnectSound()
         t = threading.Thread(target=r35c.do_read_r35c)
         t.setDaemon(True)
         t.start()
-    elif globals._scanner.name =='None' :
+    elif globals._scanner.scannerName =='None' :
         print('no scanner found')
         sound.scannerNotConnect()
 
-   
+    #auto update system time each 10 mins
+    if globals._RTC.timeUpdate=='fail':
+        tTime = threading.Thread(target=updatetime.autoUpdateTime)
+        tTime.setDaemon(True)
+        tTime.start()
+
     #loop for report
     t3 = threading.Thread(target=remote.report)
     t3.setDaemon(True)

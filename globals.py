@@ -3,6 +3,7 @@ from models.DeviceModel import DeviceModel
 from models.ServerModel import ServerModel
 from models.ScannerModel import ScannerModel
 from models.RelayModel import RelayModel
+from models.RTCModel import RTCModel
 from datetime import datetime, timedelta
 
 
@@ -12,6 +13,7 @@ def initializeWithOutGPIO():
     initServer()
     initScanner()
     removeOldScannerLog()
+    initRTC()
 
     
 def initialize(): 
@@ -21,6 +23,7 @@ def initialize():
     initServer()
     initScanner()
     removeOldScannerLog()
+    initRTC()
 
 def initDatabase():
     conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
@@ -58,4 +61,7 @@ def removeOldScannerLog():
     c.execute('Delete from scanlog where date <= ? ',(sub_7_date,))
     conn.commit()
     conn.close()
-  
+
+def initRTC():  
+    global _RTC
+    _RTC = RTCModel()

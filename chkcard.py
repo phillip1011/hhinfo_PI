@@ -143,7 +143,7 @@ def ar721CloseDoor(node):
 def openDoorWithRelays(relays,userMode):
     print('openDoor')
     globals._relay.action(1,globals._device.opendoortime,0)
-    if globals._scanner.name=="AR721":
+    if globals._scanner.scannerName=="AR721":
         nodesCount = globals._scanner.nodesCount
         for x in range(nodesCount):
             node = x+1
@@ -162,7 +162,7 @@ def openDoorWithRelays(relays,userMode):
 def closeDoorWithRelays(relays,userMode):
     print('closeDoor')
     globals._relay.action(2,globals._device.opendoortime,0)
-    if globals._scanner.name=="AR721":
+    if globals._scanner.scannerName=="AR721":
         nodesCount = globals._scanner.nodesCount
         for x in range(nodesCount):
             node = x+1

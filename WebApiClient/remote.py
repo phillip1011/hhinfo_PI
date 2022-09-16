@@ -19,7 +19,7 @@ def dcode(uid):
         'eventtime' : time.strftime("%Y%m%d%H%M%S", time.localtime()),
         'relays' : rxstatus,
         'sensors' : sxstatus,
-        'scanners' : globals._scanner.name
+        'scanners' : globals._scanner.scannerName
     }
     
     
@@ -57,7 +57,7 @@ def scode():
         'eventtime' : time.strftime("%Y%m%d%H%M%S", time.localtime()),
         'relays' : rxstatus,
         'sensors' : sxstatus,
-        'scanners' : globals._scanner.name
+        'scanners' : globals._scanner.scannerName
     }
     try:
         print('呼叫伺服器 : '+api_url_base +' ,postdata : '+json.dumps(postdata))

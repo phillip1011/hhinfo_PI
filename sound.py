@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 
+#要新增語音  RTC更新完成, RTC更新失敗
+
 def spcardCloseTime():
     today=str(datetime.now().strftime('%Y-%m-%d'))
     time=str(datetime.now().strftime('%H%M%S'))
@@ -46,6 +48,9 @@ def bootUpdateRetry():
 def sysTimeUpdateFinish():
     print("系統時間更新完成")
     os.system("aplay wav/sysTimeUpdateFinish.wav")
+def sysTimeUpdateFail():
+    print("系統時間更新失敗")
+    os.system("aplay wav/sysTimeUpdateFail.wav")
 def scannerUpdateTimeFinish():
     print("讀卡機時間更新完成")
     os.system("aplay wav/scannerUpdateTimeFinish.wav")
@@ -53,20 +58,43 @@ def scannerUpdateTimeFail():
     print("讀卡機時間更新失敗")
     os.system("aplay wav/scannerUpdateTimeFail.wav")
 
+def scanSuccess():
+    os.system("aplay wav/scanSuccess.wav")
+def scanail():
+    os.system("aplay wav/scanFail.wav")
+
+def spcard():
+    os.system("aplay wav/spcard.wav")
+def noncard():
+    os.system("aplay wav/noncard.wav")
+def remote():
+    os.system("aplay wav/remote.wav")
+def doorOpen():
+    os.system("aplay wav/doorOpen.wav")
+def doorClose():
+    os.system("aplay wav/doorClose.wav")
+
 
 def spcardOpenDoorSound():
-    print("刷卡成功 全區卡,己開門 臨時供電到 (48組時間")
-    os.system("aplay wav/spcardOpenDoorSound.wav")
-    spcardCloseTime()
+    print("刷卡成功 全區卡,己開門")
+    scanSuccess()
+    spcard()
+    doorOpen()
 def spcardCloseDoorSound():
     print("刷卡成功 全區卡, 鐵卷門關閉中,請注意安全, 請勿任意穿越鐵卷門下方")
-    os.system("aplay wav/spcardCloseDoorSound.wav")
+    scanSuccess()
+    spcard()
+    doorClose()
 def openDoorSound():
     print("刷卡成功 一般卡.己開門 ")
-    os.system("aplay wav/openDoorSound.wav")
+    scanSuccess()
+    noncard()
+    doorOpen()
 def closeDoorSound():
     print("刷卡成功 一般卡, 鐵卷門關閉中,請注意安全, 請勿任意穿越鐵卷門下方")
-    os.system("aplay wav/closeDoorSound.wav")
+    scanSuccess()
+    noncard()
+    doorClose()
 def nonAuthCard():
     print("您的卡號不在租借時間內,請確認您的租借時間或請冾區公所詢問")
     os.system("aplay wav/nonAuthCard.wav")
@@ -91,23 +119,27 @@ def closeR4Sound():
 
 def remoteOpenDoorSound():
     print("遠端操作 己開門")
-    os.system("aplay wav/remoteOpenDoorSound.wav")
+    remote()
+    doorOpen()
 def remoteCloseDoorSound():
     print("遠端操作 鐵卷門關閉中,請注意安全, 請勿任意穿越鐵卷門下方")
-    os.system("aplay wav/remoteCloseDoorSound.wav")
+    remote()
+    doorClose()
 def remoteOpenR3Sound():
-    print("遠端操作 己開啟電燈電源,請開啟電燈開關,臨時供電到 (48組時間")
-    os.system("aplay wav/remoteOpenR3Sound.wav")
-    spcardCloseTime()
+    print("遠端操作 己開啟電燈電源,請開啟電燈開關")
+    remote()
+    openR3Sound()
 def remoteCloseR3Sound():
     print("遠端操作 己關閉電燈電源")
-    os.system("aplay wav/remoteCloseR3Sound.wav")
+    remote()
+    CloseR3Sound()
 def remoteOpenR4Sound():
-    print("遠端操作 己開啟冷氣電源,請開啟電燈開關,臨時供電到 (48組時間")
-    os.system("aplay wav/remoteOpenR4Sound.wav")
-    spcardCloseTime()
+    print("遠端操作 己開啟冷氣電源,請開啟電燈開關")
+    remote()
+    openR4Sound()
 def remoteCloseR4Sound():
     print("遠端操作 己關閉冷氣電源")
-    os.system("aplay wav/remoteCloseR4Sound.wav")
+    remote()
+    CloseR4Sound()
 
 

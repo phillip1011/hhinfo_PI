@@ -2,13 +2,13 @@ import serial
 import configparser
 from time import sleep
 class ScannerModel:
-    name = ''
     sname = ''
     baurate = ''
     nodesCount = 1
     block = 1
     nodetime=''
-    
+    connect=''
+    scannerName=''
     
   
     def __init__(self):
@@ -17,6 +17,7 @@ class ScannerModel:
         self.sname = cf.get("ScannerConfig", "sname")
         self.baurate = cf.get("ScannerConfig", "baurate")
         self.nodesCount = (int)(cf.get("ScannerConfig", "nodesCount",  fallback=1))
+        #self.scannerName = cf.get("ScannerConfig", "scannerName")
 
         try:
             ser = serial.Serial(self.sname, self.baurate, timeout=1)
@@ -24,32 +25,33 @@ class ScannerModel:
             ser.write(input)
             sleep(0.2)
             output=ser.read(64)
-            
             if output!=b'':
                 if output[0]==0x7e:
-                    self.name="AR721"
+                    self.scannerName="AR721"
+                    self.connect="Success"
                     self.nodetime=(
                         "20" + str(output[11]).zfill(2) +
-                         "-" + str(output[10]).zfill(2) +
-                         "-" + str(output[9]).zfill(2) +
-                         " " + str(output[7]).zfill(2) + 
-                         ":" + str(output[6]).zfill(2) +
-                         ":" + str(output[5]).zfill(2)
+                            "-" + str(output[10]).zfill(2) +
+                            "-" + str(output[9]).zfill(2) +
+                            " " + str(output[7]).zfill(2) + 
+                            ":" + str(output[6]).zfill(2) +
+                            ":" + str(output[5]).zfill(2)
                     )
-                else:
-                    self.name="R35C"
             else:
-                self.name="R35C"
+                self.scannerName="R35C"
         except Exception as n:
             print(n)
-            self.name="None"
+            self.scannerName="None"
         self.show()
+
     def show(self):
         print("__________ScannerModel show__________")
-        print("name = " + self.name)
+        print("name = " + self.scannerName)
+        print("Connect = " + self.connect)
         print("sname = " + self.sname)
         print("baurate = " + self.baurate)
         print("nodesCount = " , self.nodesCount)
         print("nodesTime = " , self.nodetime)
+        
       
         
