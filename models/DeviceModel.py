@@ -13,7 +13,7 @@ class DeviceModel:
     localport = ''
     opendoortime = 2
     authorization_buffer_minutes = 0
-    
+    devicetime=''
     
   
     
@@ -50,6 +50,8 @@ class DeviceModel:
             self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_iron"))
 
         self.authorization_buffer_minutes = (int)(cf.get("DeviceConfig", "authorization_buffer_minutes",  fallback=0))
+        self.devicetime = subprocess.getoutput("date")
+
         self.show()
 
 
@@ -62,6 +64,7 @@ class DeviceModel:
         print("localip = " , self.localip)
         print("localport = " , self.localport)
         print("opendoortime = " , self.opendoortime)
+        print("devicetime = " , self.devicetime)
 
     def getLocalipByServer(self):
         # 先從tun0 , 抓取ip

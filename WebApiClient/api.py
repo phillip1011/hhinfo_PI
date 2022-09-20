@@ -14,6 +14,7 @@ from time import sleep
 import serial
 import struct
 import globals
+import sound as sound
 
 print("____________api.py run______________________")
 app = flask.Flask(__name__)
@@ -113,7 +114,7 @@ def api01():
             waittime = revice_data["relay"][value]["waittime"]
             if isinstance(gateno,int) and isinstance(opentime,int) and isinstance(waittime,int):
                 globals._relay.action(gateno,opentime,waittime)
-                if (gateno == 1 or gateno ==2) and globals._scanner.name == 'AR721':
+                if (gateno == 1 or gateno ==2) and globals._scanner.scannerName == 'AR721':
                     ar721action(gateno,opentime,waittime)
         sleep(0.1)
         rt = {
@@ -126,6 +127,21 @@ def api01():
             status= 203,
             mimetype='application/json'
         )
+        if gateno==1:
+            sound.remoteOpenDoorSound()
+        elif gateno==2:
+            sound.remoteCloseDoorSound()
+        elif gateno==3:
+            if opentime==255:
+                sound.remoteOpenR3Sound()
+            elif opentime==0:
+                sound.remoteCloseR3Sound()
+        elif gateno==4:
+            if opentime==255:
+                sound.remoteOpenR4Sound()
+            elif opentime==0:
+                sound.remoteCloseR4Sound()
+                
         return response
 
     except:
@@ -210,7 +226,7 @@ def api02():
         update_time.update()
         #update_time.update2(revice_data)
         status_code = flask.Response(status=203)
-        if globals._scanner.name=="AR721":
+        if globals._scanner.scannerName=="AR721":
             nodesCount = globals._scanner.nodesCount
             for x in range(nodesCount):
                 node = x+1
@@ -233,7 +249,7 @@ def api02():
                 # print(input)
                 ser.write(input)
                 sleep(0.2)
-                print(globals._scanner.name,"node=",node, "校時完成")
+                print(globals._scanner.scannerName,"node=",node, "校時完成")
 
         return status_code
 
@@ -358,7 +374,7 @@ def apiDeviceDate():
     conn.close()
     status_code = flask.Response(status=203)
 
-    globals.initialize() 
+    globals.initDevice() 
 
     return status_code
   

@@ -19,7 +19,7 @@ def dcode(uid):
         'eventtime' : time.strftime("%Y%m%d%H%M%S", time.localtime()),
         'relays' : rxstatus,
         'sensors' : sxstatus,
-        'scanners' : globals._scanner.name
+        'scanners' : globals._scanner.scannerName
     }
     
     
@@ -27,11 +27,11 @@ def dcode(uid):
     try:
         print('呼叫伺服器 : '+api_url_base +' ,postdata : '+json.dumps(postdata))
         response = requests.post(api_url_base,headers=headers,  data=json.dumps(postdata), timeout=3)
-        print(response.text)
-        print('伺服器回傳狀態:'+str(response.status_code))
-        if (response.status_code == 200):
+        #print(response.text)
+        #print('伺服器回傳狀態:'+str(response.status_code))
+        #if (response.status_code == 200):
             #print("GET DATA")
-            print ('伺服器回傳狀態',response.text)
+            #print ('伺服器回傳狀態',response.text)
     except:
         print("Post Dcode error!")
     
@@ -57,7 +57,7 @@ def scode():
         'eventtime' : time.strftime("%Y%m%d%H%M%S", time.localtime()),
         'relays' : rxstatus,
         'sensors' : sxstatus,
-        'scanners' : globals._scanner.name
+        'scanners' : globals._scanner.scannerName
     }
     try:
         print('呼叫伺服器 : '+api_url_base +' ,postdata : '+json.dumps(postdata))
