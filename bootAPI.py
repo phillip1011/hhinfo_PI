@@ -67,9 +67,9 @@ if __name__=='__main__':
     initGlobals()
     updatedevice()
     
-    if forceVPN == 'true':
-        print('強制啟用VPN')
-        login_internet.main(False)
+    # if forceVPN == 'true':
+    #     print('強制啟用VPN')
+    #     login_internet.main(False)
 
     os.system("sudo systemctl start hhinfo_main.service")
     

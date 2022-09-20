@@ -2,7 +2,7 @@
 import RPi.GPIO as GPIO
 import threading
 import serial
-import WebApiClient.login_internet as login_internet
+#import WebApiClient.login_internet as login_internet
 import WebApiClient.api as api
 import WebApiClient.remote as remote
 import WebApiClient.updatetime as updatetime
@@ -26,11 +26,11 @@ if __name__=='__main__':
     #loop for change relay off
     initGlobals()
 
-    if globals._server.forceVPN == 'true':
-        print('強制啟用VPN')
-        tVPN = threading.Thread(target=login_internet.main, args=(True,))
-        tVPN.setDaemon(True)
-        tVPN.start()
+    # if globals._server.forceVPN == 'true':
+    #     print('強制啟用VPN')
+    #     tVPN = threading.Thread(target=login_internet.main, args=(True,))
+    #     tVPN.setDaemon(True)
+    #     tVPN.start()
      
     if globals._scanner.scannerName == 'AR721':
         print('Start thread AR721')
