@@ -128,20 +128,31 @@ def api01():
             mimetype='application/json'
         )
         if gateno==1:
-            sound.remoteOpenDoorSound()
+            ts1 = threading.Thread(target=sound.remoteOpenDoorSound)
+            ts1.setDaemon(True)
+            ts1.start()
         elif gateno==2:
-            sound.remoteCloseDoorSound()
+            ts2 = threading.Thread(target=sound.remoteCloseDoorSound)
+            ts2.setDaemon(True)
+            ts2.start()
         elif gateno==3:
             if opentime==255:
-                sound.remoteOpenR3Sound()
+                ts3 = threading.Thread(target=sound.remoteOpenR3Sound)
+                ts3.setDaemon(True)
+                ts3.start()
             elif opentime==0:
-                sound.remoteCloseR3Sound()
+                ts4 = threading.Thread(target=sound.remoteCloseR3Sound)
+                ts4.setDaemon(True)
+                ts4.start()
         elif gateno==4:
             if opentime==255:
-                sound.remoteOpenR4Sound()
+                ts5 = threading.Thread(target=sound.remoteOpenR4Sound)
+                ts5.setDaemon(True)
+                ts5.start()
             elif opentime==0:
-                sound.remoteCloseR4Sound()
-                
+                ts6 = threading.Thread(target=sound.remoteCloseR4Sound)
+                ts6.setDaemon(True)
+                ts6.start()
         return response
 
     except:
