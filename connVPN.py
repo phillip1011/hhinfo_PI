@@ -52,23 +52,13 @@ def chkFile():
 
 def connVPN():
     if pingVPNServer(VPNserverip) !=0:
-        chkTun0()
+        os.system("sudo killall openvpn")
+        sleep(3)
         os.system("sudo -b openvpn --config /home/ubuntu/hhinfo_PI/" +vpnfile)
         sleep(8)
         if pingVPNServer(VPNserverip) ==0:
             wlog("登入VPN","a+")
             sound.sysLoginVpnSound()
-
-def chkTun0():
-        #PING不到VPN server但網卡tun0 仍存在, 處理delete tun0
-        cmd = "/sbin/ip -o -4 addr list tun0 | awk '{print $4}' | cut -d/ -f1"
-        output = subprocess.getoutput(cmd)
-        if "not exist" not in output:
-            return
-        else:
-            os.system("sudo killall openvpn")
-
-
 
 if __name__=='__main__':
     cf = configparser.ConfigParser()
