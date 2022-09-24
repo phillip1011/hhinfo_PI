@@ -53,7 +53,7 @@ def chkFile():
 def connVPN():
     if pingVPNServer(VPNserverip) !=0:
         os.system("sudo killall openvpn")
-        sleep(3)
+        sleep(1)
         os.system("sudo -b openvpn --config /home/ubuntu/hhinfo_PI/" +vpnfile)
         sleep(8)
         if pingVPNServer(VPNserverip) ==0:
@@ -71,6 +71,11 @@ if __name__=='__main__':
     
     while True :
         if pingServer(serverip)==0:
-            chkFile()
-            connVPN()
-            sleep(60)
+            if pingVPNServer(VPNserverip) !=0:
+                chkFile()
+                connVPN()
+        else:
+            os.system("sudo killall openvpn")
+            sleep(1)
+            
+        sleep(60)
