@@ -22,14 +22,25 @@ def pingServer(serverip):
         print("網頁伺服器連線失敗",datetime.now())
         return
 def pingVPNServer(VPNserverip):
-    try:
-        VPNserverip=str(VPNserverip)
-        p = subprocess.check_output(["ping", "-c", "1", VPNserverip])
+    # 先從tun0 , 抓取ip , 
+    # 有Tun0時,output=IP,
+    # 無Tun0時,output=Device "tun0" does not exist.
+    cmd = "/sbin/ip -o -4 addr list tun0 | awk '{print $4}' | cut -d/ -f1"
+    output = subprocess.getoutput(cmd)
+    if "not exist" not in output: 
         print("VPN伺服器連線正常",datetime.now())
         return 0
-    except subprocess.CalledProcessError:
+    else:
         print("VPN伺服器連線失敗",datetime.now())
         return
+    # try:
+    #     VPNserverip=str(VPNserverip)
+    #     p = subprocess.check_output(["ping", "-c", "1", VPNserverip])
+    #     print("VPN伺服器連線正常",datetime.now())
+    #     return 0
+    # except subprocess.CalledProcessError:
+    #     print("VPN伺服器連線失敗",datetime.now())
+    #     return
 def wlog(msg,fnc):
     #將結果寫到start_log.txt
     print(msg)
@@ -68,7 +79,9 @@ if __name__=='__main__':
     mac=open('/sys/class/net/eth0/address').readline()
     mac=mac[0:17]
     vpnfile = str(mac.replace(":",""))+".ovpn"
-    
+    os.system("amixer -c 0 set Headphone 90%")  #調整系統音量到90%
+
+
     while True :
         if pingServer(serverip)==0:
             if pingVPNServer(VPNserverip) !=0:

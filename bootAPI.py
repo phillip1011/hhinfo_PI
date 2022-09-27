@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 import json
 import requests
-import WebApiClient.login_internet as login_internet 
+#import WebApiClient.login_internet as login_internet 
 import sqlite3
-import configparser
+#import configparser
 import globals
 import sound as sound
 import os
@@ -57,12 +57,12 @@ def updatedevice():
 
 if __name__=='__main__':
     os.system("sudo systemctl stop hhinfo_main.service")   #先關閉主程式, 等boot.service Finish後再開始
-    cf = configparser.ConfigParser()
-    cf.read("/home/ubuntu/hhinfo_PI/config.ini")
-    serverip = cf.get("ServerConfig", "serverip")
-    VPNserverip = cf.get("ServerConfig", "VPNserverip")
-    forceVPN = cf.get("ServerConfig", "forceVPN")
-    os.system("amixer -c 0 set Headphone 90%")  #調整系統音量到90%
+    # cf = configparser.ConfigParser()
+    # cf.read("/home/ubuntu/hhinfo_PI/config.ini")
+    # serverip = cf.get("ServerConfig", "serverip")
+    # VPNserverip = cf.get("ServerConfig", "VPNserverip")
+    #forceVPN = cf.get("ServerConfig", "forceVPN")
+    #os.system("amixer -c 0 set Headphone 90%")  #調整系統音量到90%
     sound.sysStartSound()
     initGlobals()
     updatedevice()
