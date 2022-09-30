@@ -48,7 +48,7 @@ def chkcard():
         return 0
     
     else:
-        if poweredByTime == true:
+        if poweredByTime == "true":
             print("本時段有預約:開啟R3並檢查是否開啟R4")
             globals._relay.action(3,255,0)
             if data[4] == '1':
