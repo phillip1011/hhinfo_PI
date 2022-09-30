@@ -6,7 +6,7 @@ import configparser
 rxstatus = [0, 0, 0, 0]
 sxstatus = [0, 0, 0, 0, 0, 0]
 controlip=""
-
+poweredByTime=""
 
 
 
