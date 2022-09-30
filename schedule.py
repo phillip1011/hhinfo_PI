@@ -1,6 +1,8 @@
 import sqlite3
 from datetime import datetime
 import globals
+import configparser
+
 rxstatus = [0, 0, 0, 0]
 sxstatus = [0, 0, 0, 0, 0, 0]
 controlip=""
@@ -9,6 +11,7 @@ controlip=""
 
 
 def initGlobals():
+    #globals.ServerModel()
     globals.initRelay()
     globals.initDevice()
     globals._relay.setupGPIO()
@@ -45,7 +48,7 @@ def chkcard():
         return 0
     
     else:
-        if globals._server.poweredByTime == true:
+        if poweredByTime == true:
             print("本時段有預約:開啟R3並檢查是否開啟R4")
             globals._relay.action(3,255,0)
             if data[4] == '1':
@@ -60,5 +63,9 @@ def chkcard():
 
 
 if __name__=='__main__':
+    cf = configparser.ConfigParser()
+    cf.read("/home/ubuntu/hhinfo_PI/config.ini")
+    poweredByTime = cf.get("ServerConfig", "poweredByTime")
+
     initGlobals()
     chkcard()
