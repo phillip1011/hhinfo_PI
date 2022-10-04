@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 
 def initializeWithOutGPIO():
-    #initDatabase()
+    initDatabase()
     initDevice()
     initServer()
     #initScanner()
