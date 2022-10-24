@@ -171,8 +171,8 @@ def closeDoorWithRelays(relays,userMode):
             t7.start()
             sleep(1)
     closeDoorSound(userMode)
-    for relay in relays:
-        closeRelay(int(relay))
+    # for relay in relays:
+    #     closeRelay(int(relay))
 
 def openDoorSound(userMode):
     if userMode=='全區卡':
