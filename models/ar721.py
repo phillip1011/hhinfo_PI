@@ -16,23 +16,30 @@ def write_command_to_node(node, func):
     sum=node+int(func,16)+xor
     sum =sum % 256
     comm=b'\x7e\x04'+ bytes([node])+ bytes([int(func,16)]) + bytes([xor])+ bytes([sum])
-    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-    ser.write(comm)
+    try:
+        ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+        ser.write(comm)
+    except:
+        print("ser連接USB失敗")
     sleep(0.2)
     
 def do_read_ar721():
-    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-    ser.flushInput()  # flush input buffer
-    ser.flushOutput()  # flush output buffer
+    # ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+    # ser.flushInput()  # flush input buffer
+    # ser.flushOutput()  # flush output buffer
     nodesCount = globals._scanner.nodesCount
     while True:
        for x in range(nodesCount):
-            node = x+1
-            write_command_to_node(node, '0x25')
             try:
+                ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+                ser.flushInput()  # flush input buffer
+                ser.flushOutput()  # flush output buffer
+                node = x+1
+                write_command_to_node(node, '0x25')
                 output = ser.read(64)
             except:
-                print('read error')
+                print(globals._scanner.sname + ' AR721 node:' + str(node) + ' read error')
+                sleep(3)
             if len(output)==31:
                 today=str(datetime.now().strftime('%Y-%m-%d'))
                 ScanDate = "20" + str(output[11]).zfill(2) + "-" + str(output[10]).zfill(2) + "-" + str(output[9]).zfill(2)
@@ -45,7 +52,7 @@ def do_read_ar721():
                         UID[2] = output[23]
                         UID[3] = output[24]
                         uid = int.from_bytes(UID, byteorder='big')
-                        print('ar721刷卡記錄,node=',node,uid,ScanDate,ScanTime)
+                        print('AR721刷卡記錄,站號(node)=',node,'卡號:',uid,'刷卡日期',ScanDate,'刷卡時間',ScanTime)
                         write_command_to_node(node, '0x37')
                         sleep(0.2)
                         callback(uid)
