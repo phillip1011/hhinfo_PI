@@ -125,21 +125,27 @@ def actionDoor(uid,userMode,relays):
 
 
 def ar721OpenDoor(node):
-    AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
-    AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
-    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-    ser.write(AR721_R1_ON)
-    sleep(globals._device.opendoortime)
-    ser.write(AR721_R1_OFF)
+    try:
+        AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
+        AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
+        ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+        ser.write(AR721_R1_ON)
+        sleep(globals._device.opendoortime)
+        ser.write(AR721_R1_OFF)
+    except:
+        print("ar721OpenDoor Error")
 
 def ar721CloseDoor(node):
-    AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
-    AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
-    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-    ser.write(AR721_R2_ON)
-    sleep(globals._device.opendoortime)
-    ser.write(AR721_R2_OFF)
-
+    try:
+        AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
+        AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
+        ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+        ser.write(AR721_R2_ON)
+        sleep(globals._device.opendoortime)
+        ser.write(AR721_R2_OFF)
+    except:
+        print("ar721CloseDoor Error")
+        
 def openDoorWithRelays(relays,userMode):
     print('openDoor')
     globals._relay.action(1,globals._device.opendoortime,0)
