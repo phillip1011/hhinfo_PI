@@ -60,4 +60,5 @@ def do_read_ar721():
                         write_command_to_node(node, '0x37')
                         sleep(0.2)
                 else:
+                    print("讀卡機或主機時間不符")
                     write_command_to_node(node, '0x37')

@@ -62,20 +62,26 @@ def ar721OpenDoor(node,opentime,waittime):
     AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
     if waittime!=0:
         time.sleep(waittime)
-    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-    ser.write(AR721_R1_ON)
-    sleep(opentime)
-    ser.write(AR721_R1_OFF)
+    try:
+        ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+        ser.write(AR721_R1_ON)
+        sleep(opentime)
+        ser.write(AR721_R1_OFF)
+    except:
+        print("remote ar721OpenDoor Error")
 
 def ar721CloseDoor(node,opentime,waittime):
     AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
     AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
     if waittime!=0:
         time.sleep(waittime)
-    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-    ser.write(AR721_R2_ON)
-    sleep(opentime)
-    ser.write(AR721_R2_OFF)
+    try:
+        ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+        ser.write(AR721_R2_ON)
+        sleep(opentime)
+        ser.write(AR721_R2_OFF)
+    except:
+        print("remote ar721CloseDoor Error")
 
 def ar721action(gateno,dooropentime,waittime):
     nodesCount = globals._scanner.nodesCount
@@ -241,24 +247,27 @@ def api02():
             nodesCount = globals._scanner.nodesCount
             for x in range(nodesCount):
                 node = x+1
-                ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
-                sysyy=int(datetime.now().strftime('%y'))
-                sysmm=int(datetime.now().strftime('%m'))
-                sysdd=int(datetime.now().strftime('%d'))
-                syshh=int(datetime.now().strftime('%H'))
-                sysmin=int(datetime.now().strftime('%M'))
-                sysss=int(datetime.now().strftime('%S'))
-                sysww=int(datetime.now().strftime('%w'))
-                if sysww==0:
-                    sysww=7
-                print("PI系統時間=",sysyy,'-',sysmm,'-',sysdd,' ',syshh,':',sysmin,':',sysss)
-                xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy
-                
-                sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
-                sum =sum % 256
-                input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
-                # print(input)
-                ser.write(input)
+                try:
+                    ser = serial.Serial(globals._scanner.sname, globals._scanner.baurate, timeout=1)
+                    sysyy=int(datetime.now().strftime('%y'))
+                    sysmm=int(datetime.now().strftime('%m'))
+                    sysdd=int(datetime.now().strftime('%d'))
+                    syshh=int(datetime.now().strftime('%H'))
+                    sysmin=int(datetime.now().strftime('%M'))
+                    sysss=int(datetime.now().strftime('%S'))
+                    sysww=int(datetime.now().strftime('%w'))
+                    if sysww==0:
+                        sysww=7
+                    print("PI系統時間=",sysyy,'-',sysmm,'-',sysdd,' ',syshh,':',sysmin,':',sysss)
+                    xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy
+                    
+                    sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
+                    sum =sum % 256
+                    input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
+                    # print(input)
+                    ser.write(input)
+                except:
+                    print("ar721 update time Error")
                 sleep(0.2)
                 print(globals._scanner.scannerName,"node=",node, "校時完成")
 

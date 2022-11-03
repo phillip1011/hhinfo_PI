@@ -6,6 +6,7 @@ import sound as sound
 from datetime import datetime
 from time import sleep
 import configparser
+import globals
 
 class RTCModel:
     RTCDev=''
@@ -23,22 +24,25 @@ class RTCModel:
         self.baurate = cf.get("ScannerConfig", "baurate")
 
         if self.updateLocalTime()==200:
-            if self.scannerName=="AR721":
+            if globals._scanner.scannerName=="AR721":
                 self.update721time()
             if self.updateRTC()==1:
                 self.RTCDev="連接成功"
             else:
                 self.RTCDev="連接失敗"
+            self.timeUpdate='Sucess'
             sound.sysTimeUpdateFinish()
         else:
             if self.findRTC()==1: #有RTC,將RTC寫到721
-                if self.scannerName=="AR721":
+                if globals._scanner.scannerName=="AR721":
                     self.update721time()
                     sound.sysTimeUpdateFinish()
+                    self.timeUpdate='Sucess'
             else: #無RTC,用721回寫到系統
-                if self.scannerName=="AR721":
+                if globals._scanner.scannerName=="AR721":
                     time_tuple=self.read_721time('0x24')
                     self.localSetTime(time_tuple)
+                    self.timeUpdate='Sucess'
                     sound.sysTimeUpdateFinish()
                 else: #無網路,無RTC,無721, 
                     sound.sysTimeUpdateFail()
@@ -104,7 +108,7 @@ class RTCModel:
                 # print(input)
                 ser.write(input)
                 sleep(0.2)
-                #print(globals._scanner.name,"node=",node, "校時完成")
+                print(globals._scanner.scannerName,"node=",node, "校時完成")
             self.Ar721update="Success"
             #sound.scannerUpdateTimeFinish()
 
