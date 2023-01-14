@@ -27,9 +27,9 @@ class RTCModel:
             if globals._scanner.scannerName=="AR721":
                 self.update721time()
             if self.updateRTC()==1:
-                self.RTCDev="連接成功"
+                self.RTCDev="連接RTC成功"
             else:
-                self.RTCDev="連接失敗"
+                self.RTCDev="連接RTC失敗"
             self.timeUpdate='Sucess'
             sound.sysTimeUpdateFinish()
         else:
@@ -158,7 +158,7 @@ class RTCModel:
         import time
         import datetime
         
-        #print(time_tuple)
+        print('伺服器時間:', '>>>>>>>>>' , time_tuple)
         CLOCK_REALTIME = 0
 
         class timespec(ctypes.Structure):

@@ -4,6 +4,7 @@ from datetime import datetime
 import chkcard as chkcard
 import WebApiClient.remote as remote
 import globals
+import ResetUSB as ResetUSB
 
 def callback(uid):
     print("__________do_read_ar721________________")
@@ -60,5 +61,7 @@ def do_read_ar721():
                         write_command_to_node(node, '0x37')
                         sleep(0.2)
                 else:
-                    print("讀卡機或主機時間不符")
+                    print("讀卡機或主機時間不符,",'讀卡機刷卡日期:',ScanDate,ScanTime,'系統時間:',today)
                     write_command_to_node(node, '0x37')
+            elif len(output)==0 :
+                ResetUSB.ResetUSB()

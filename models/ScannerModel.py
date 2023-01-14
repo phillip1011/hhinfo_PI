@@ -46,12 +46,13 @@ class ScannerModel:
 
     def show(self):
         print("__________ScannerModel show__________")
-        print("name = " + self.scannerName)
-        print("Connect = " + self.connect)
-        print("sname = " + self.sname)
-        print("baurate = " + self.baurate)
-        print("nodesCount = " , self.nodesCount)
-        print("nodesTime = " , self.nodetime)
+        print("門口機名稱 = " + self.scannerName)
+        print("門口機連線狀態 = " + self.connect)
+        print("連線端口 = " + self.sname)
+        print("連線速率 = " + self.baurate)
+        print("門口機數量 = " , self.nodesCount)
+        print("門口機時間 = " , self.nodetime)
+        print("")
         
       
         

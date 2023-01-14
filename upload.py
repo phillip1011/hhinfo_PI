@@ -53,8 +53,8 @@ def uploadlog():
                 
                 else:
                     print("刷卡資料上傳失敗,伺服器回傳狀態 : ",response.status_code)
-            else:
-                print("無刷卡上傳資料")
+            #else:
+                #print("無刷卡上傳資料")
             
         except:
             print("Post data log error.")
