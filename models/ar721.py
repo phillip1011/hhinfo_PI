@@ -65,3 +65,4 @@ def do_read_ar721():
                     write_command_to_node(node, '0x37')
             elif len(output)==0 :
                 ResetUSB.ResetUSB()
+                sleep(2)
