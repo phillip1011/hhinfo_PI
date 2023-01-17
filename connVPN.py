@@ -16,7 +16,7 @@ def pingServer(serverip):
     try:
         serverip=str(serverip)
         p = subprocess.check_output(["ping", "-c", "1", serverip])
-        print("網頁伺服器連線正常",datetime.now())
+        #print("網頁伺服器連線正常",datetime.now())
         return 0
     except subprocess.CalledProcessError:
         print("網頁伺服器連線失敗",datetime.now())
@@ -28,7 +28,7 @@ def pingVPNServer(VPNserverip):
     cmd = "/sbin/ip -o -4 addr list tun0 | awk '{print $4}' | cut -d/ -f1"
     output = subprocess.getoutput(cmd)
     if "not exist" not in output: 
-        print("VPN伺服器連線正常",datetime.now())
+        #print("VPN伺服器連線正常",datetime.now())
         return 0
     else:
         print("VPN伺服器連線失敗",datetime.now())
