@@ -4,7 +4,7 @@ from datetime import datetime
 import chkcard as chkcard
 import WebApiClient.remote as remote
 import globals
-import ResetUSB as ResetUSB
+import os
 
 def callback(uid):
     print("__________do_read_ar721________________")
@@ -29,6 +29,10 @@ def do_read_ar721():
     # ser.flushInput()  # flush input buffer
     # ser.flushOutput()  # flush output buffer
     nodesCount = globals._scanner.nodesCount
+    for y in range(nodesCount):
+        node = y+1
+        write_command_to_node(node, '0x2d') #先清空721內的舊記錄
+
     while True:
        for x in range(nodesCount):
             try:
@@ -64,5 +68,6 @@ def do_read_ar721():
                     print("讀卡機或主機時間不符,",'讀卡機刷卡日期:',ScanDate,ScanTime,'系統時間:',today)
                     write_command_to_node(node, '0x37')
             elif len(output)==0 :
-                ResetUSB.ResetUSB()
-                sleep(2)
+                os.system("sudo usb_modeswitch -v 0x1a86 -p 0x7523 --reset-usb")
+                sleep(5)
+                print("urb stopped, USB drive restarted")
