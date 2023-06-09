@@ -76,7 +76,10 @@ if __name__=='__main__':
     cf.read("/home/ubuntu/hhinfo_PI/config.ini")
     serverip = cf.get("ServerConfig", "serverip")
     VPNserverip = cf.get("ServerConfig", "VPNserverip")
-    mac=open('/sys/class/net/eth0/address').readline()
+    try:
+        mac=open('/sys/class/net/eth0/address').readline()
+    except:
+        mac=open('/sys/class/net/wlan0/address').readline()
     mac=mac[0:17]
     vpnfile = str(mac.replace(":",""))+".ovpn"
     os.system("amixer -c 0 set Headphone 90%")  #調整系統音量到90%
