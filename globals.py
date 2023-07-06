@@ -28,12 +28,31 @@ def initialize():
 def initDatabase():
     conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
     c=conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS device (id TEXT,ip TEXT,local_ip TEXT,ip_mode TEXT,family TEXT,name TEXT,description TEXT,group_id TEXT,mode TEXT,style TEXT,type TEXT,is_booking TEXT,status TEXT,kernel TEXT)')
+    c.execute('CREATE TABLE IF NOT EXISTS device ('
+              'id TEXT,'
+              'ip TEXT,'
+              'local_ip TEXT,'
+              'ip_mode TEXT,'
+              'family TEXT,'
+              'name TEXT,'
+              'description TEXT,'
+              'group_id TEXT,'
+              'mode TEXT,'
+              'style TEXT,'
+              'type TEXT,'
+              'is_booking TEXT,'
+              'status TEXT,'
+              'kernel TEXT,'
+              'buffer_minutes TEXT,'
+              'delay_minutes TEXT,'
+              'spcard_minutes TEXT)'
+            )
     c.execute('CREATE TABLE IF NOT EXISTS spcards (id TEXT,customer_id TEXT,authority TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS cards (id TEXT,customer_id TEXT,card_uuid TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS booking_customers (id TEXT,booking_id TEXT,customer_id TEXT,source TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS booking_histories (id TEXT,deviceid TEXT,date TEXT,range_id TEXT,aircontrol TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS scanlog (cardnbr TEXT,date TEXT,time TEXT,rtnflag TEXT,auth TEXT,process TEXT,result TEXT)')  
+    c.execute('CREATE TABLE IF NOT EXISTS scanlog (cardnbr TEXT,date TEXT,time TEXT,rtnflag TEXT,auth TEXT,process TEXT,result TEXT)') 
+    c.execute('CREATE TABLE IF NOT EXISTS spcard_time (cardnbr TEXT,start_time TEXT,end_time TEXT,authority TEXT)')  
     conn.close()
 
 

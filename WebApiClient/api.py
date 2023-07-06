@@ -368,26 +368,46 @@ def apiDeviceDate():
     revice_data = json.loads(request.data)
     conn=sqlite3.connect("cardno.db")
     c=conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS device(id TEXT,ip TEXT,local_ip TEXT,ip_mode TEXT,family TEXT,name TEXT,description TEXT,group_id TEXT,mode TEXT,style TEXT,type TEXT,is_booking TEXT,status TEXT,kernel TEXT)')
+    c.execute(
+        'CREATE TABLE IF NOT EXISTS device('
+        'id TEXT,'
+        'ip TEXT,'
+        'local_ip TEXT,'
+        'ip_mode TEXT,'
+        'family TEXT,'
+        'name TEXT,'
+        'description TEXT,'
+        'group_id TEXT,'
+        'mode TEXT,'
+        'style TEXT,'
+        'type TEXT,'
+        'is_booking TEXT,'
+        'status TEXT,'
+        'kernel TEXT,'
+        'buff_minutes INTEGER ,'
+        'delay_minutes INTEGER,'
+        'spcard_minutes INTEGER)'
+    )
     c.execute('DELETE FROM device')
     value = revice_data
-    c.execute(
-        "INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        (
-            value["id"],
-            value["ip"],
-            value["local_ip"],
-            value["ip_mode"],
-            value["family"],
-            value["name"],
-            value["description"],
-            value["group_id"],
-            value["mode"],
-            value["style"],
-            value["type"],
-            value["is_booking"],
-            value["status"],
-            value["kernel"]
+    c.execute('INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(
+        value["id"],
+        value["ip"],
+        value["local_ip"],
+        value["ip_mode"],
+        value["family"],
+        value["name"],
+        value["description"],
+        value["group_id"],
+        value["mode"],
+        value["style"],
+        value["type"],
+        value["is_booking"],
+        value["status"],
+        value["kernel"],
+        value["time_buffer_start"],
+        value["time_buffer_end"],
+        value["spcard_time"],   
         )
     )
     conn.commit()

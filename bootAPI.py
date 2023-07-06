@@ -31,7 +31,7 @@ def updatedevice():
             conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
             c=conn.cursor()
             c.execute('DELETE FROM device')
-            c.execute("INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
+            c.execute("INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
                 revice_data["id"],
                 revice_data["ip"],
                 revice_data["local_ip"],
@@ -45,7 +45,10 @@ def updatedevice():
                 revice_data["type"],
                 revice_data["is_booking"],
                 revice_data["status"],
-                revice_data["kernel"]
+                revice_data["kernel"],
+                revice_data["time_buffer_start"],
+                revice_data["time_buffer_end"],
+                revice_data["spcard_time"]
                 )
             )
             conn.commit()

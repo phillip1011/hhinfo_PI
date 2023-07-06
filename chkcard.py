@@ -5,6 +5,9 @@ import serial
 import globals 
 import threading
 import sound as sound
+buffer_minutes =''
+delay_minutes =''
+spcard_minutes =''
 
 def initData():
     global _today
@@ -12,22 +15,42 @@ def initData():
     global _time
     global _buffer_range_id
     global _buffer_time
+    global _delay_range_id
+    global _delay_time
 
     _today=str(datetime.now().strftime('%Y-%m-%d'))
     _time=str(datetime.now().strftime('%H:%M:%S'))
-    _buffer_time=str((datetime.now() + timedelta(minutes=globals._device.authorization_buffer_minutes)).strftime('%H:%M:%S'))
-   
-    _buffer_range_id= criteriaRangeId(_buffer_time)
     _range_id = criteriaRangeId(_time)
 
-   
+    buffer_minutes,=getBuffer_time()
+    _buffer_time=str((datetime.now() + timedelta(minutes=int(buffer_minutes))).strftime('%H:%M:%S'))
+    _buffer_range_id= criteriaRangeId(_buffer_time)
+    
+    delay_minutes,=getDelay_time()
+    _delay_time=str((datetime.now() - timedelta(minutes=int(delay_minutes))).strftime('%H:%M:%S'))
+    _delay_range_id= criteriaRangeId(_delay_time)
 
+    #print("提早進入分鐘",buffer_minutes)
+    #print("延後退場分鐘",delay_minutes)
 
+    
 def criteriaRangeId(time):
     if int(time[3:5])>=30:
         return str(time[0:2])+':30'
     else:
         return str(time[0:2])+':00'
+
+def getSetting():
+    return {
+        "_today": _today,
+        "_range_id" : _range_id,
+        "_time" : _time,
+        "_buffer_time" : _buffer_time,
+        "_buffer_range_id" : _buffer_range_id,
+        "_delay_time" : _delay_time,
+        "_delay_range_id" : _delay_range_id,
+    }
+
 
 
 def ar721comm(node,func,data):
@@ -41,7 +64,29 @@ def ar721comm(node,func,data):
     # sleep(0.2)
     return comm
 
+def getSpcard_time():
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute('select spcard_minutes from device') 
+    spcard_time = c.fetchone()
+    conn.close()
+    return spcard_time
 
+def getBuffer_time():
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute('select buffer_minutes from device') 
+    buffer_time = c.fetchone()
+    conn.close()
+    return buffer_time
+
+def getDelay_time():
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute('select delay_minutes from device') 
+    delay_time = c.fetchone()
+    conn.close()
+    return delay_time
 
 def getCardByUid(uid):
     conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
@@ -67,18 +112,54 @@ def getNowBookingDataByCustomerId(customer_id):
         'from booking_customers as bc '
         'join booking_histories as bh '
         'on bc.booking_id = bh.id '
-        'where bc.customer_id = ? and bh.date = ? and ( bh.range_id = ? or bh.range_id = ? )',
+        'where bc.customer_id = ? and bh.date = ? and bh.range_id = ?',
         (
             customer_id,
             _today,
-            _range_id,
-            _buffer_range_id
+            _range_id
         )
     )
-
     nowBookingData = c.fetchone()
     conn.close()
     return nowBookingData
+
+def getBufferBookingDataByCustomerId(customer_id):
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute(
+        'select bh.* '
+        'from booking_customers as bc '
+        'join booking_histories as bh '
+        'on bc.booking_id = bh.id '
+        'where bc.customer_id = ? and bh.date = ? and bh.range_id = ? ',
+        (
+            customer_id,
+            _today,
+            _buffer_range_id
+        )
+    )
+    bufferBookingData = c.fetchone()
+    conn.close()
+    return bufferBookingData
+
+def getDelayBookingDataByCustomerId(customer_id):
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute(
+        'select bh.* '
+        'from booking_customers as bc '
+        'join booking_histories as bh '
+        'on bc.booking_id = bh.id '
+        'where bc.customer_id = ? and bh.date = ? and bh.range_id = ? ',
+        (
+            customer_id,
+            _today,
+            _delay_range_id
+        )
+    )
+    delayBookingData = c.fetchone()
+    conn.close()
+    return delayBookingData
 
 def getOverTimeBookingDataByCustomerId(customer_id):
     print('_______',customer_id,_today,_range_id)
@@ -148,6 +229,7 @@ def ar721CloseDoor(node):
         
 def openDoorWithRelays(relays,userMode):
     print('openDoor')
+    openDoorSound(userMode)
     globals._relay.action(1,globals._device.opendoortime,0)
     if globals._scanner.scannerName=="AR721":
         nodesCount = globals._scanner.nodesCount
@@ -157,14 +239,11 @@ def openDoorWithRelays(relays,userMode):
             t6.setDaemon(True)
             t6.start()
             sleep(1)
-    openDoorSound(userMode)
+    #openDoorSound(userMode)
     for relay in relays:
         openRelay(int(relay))
     
 
-
-
-    
 def closeDoorWithRelays(relays,userMode):
     print('closeDoor')
     globals._relay.action(2,globals._device.opendoortime,0)
@@ -214,10 +293,6 @@ def log(uid,auth,process,result):
     conn.close()
 
 
-    
-
-
-
 def chkcard(uid):
     print("____________chkcard_run__________________")
     initData()
@@ -237,6 +312,24 @@ def chkcard(uid):
         #判斷預約紀錄
         nowBookingData = getNowBookingDataByCustomerId(card[1])
         if nowBookingData == None:
+            if buffer_minutes !=0:
+                print("找尋緩衝提前時段")
+                bufferBookingData = getBufferBookingDataByCustomerId(card[1])
+                if bufferBookingData !=None:
+                    authority_relay = [3]
+                    print("緩衝提前時段,開啟R3")
+                    actionDoorReturn = actionDoor(uid,'緩衝提前時段',authority_relay)
+                    return 0
+
+            if delay_minutes !=0:
+                print("找尋緩衝延後時段")
+                delayBookingData = getDelayBookingDataByCustomerId(card[1])
+                if delayBookingData !=None:
+                    authority_relay = [3]
+                    print("緩衝延後時段,開啟R3")
+                    actionDoorReturn = actionDoor(uid,'緩衝延後時段',authority_relay)
+                    return 0
+            
             if globals._device.doortype=='鐵捲門' :
                 print('找不到預約紀錄 => 不開門 , 找尋超時紀錄')
                 overTimeBookingData = getOverTimeBookingDataByCustomerId(card[1])
@@ -275,21 +368,38 @@ def chkcard(uid):
           
     else:
         print("全區卡")
+        spcard_minutes,=getSpcard_time()
+        T1=datetime.now()
+        T2=T1 + timedelta(minutes=int(spcard_minutes))
+        conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+        c=conn.cursor()
+        c.execute('DELETE FROM spcard_time')
+        c.execute("INSERT INTO spcard_time values (?,?,?,?)", (
+            uid,
+            T1,
+            T2,
+            spcard[2]
+            )
+        )
+        conn.commit()
+        conn.close()
+
+
         authority = spcard[2]
         if authority == '':
             authority_split=[]
         else:
             authority_split = authority.split(',')
-        print('authority_split : ',authority_split)
+        #print('authority_split : ',authority_split)
         actionDoorReturn = actionDoor(uid,'全區卡',authority_split)
 
-        
-    
-    
 
 
-# if __name__=='__main__':
+#if __name__=='__main__':
+
+
     # uid='4077189990'
     # uid='1479304897'
     # # uid='1111000125'
     # chkcard(uid)
+
