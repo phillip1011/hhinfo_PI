@@ -8,8 +8,8 @@ import sqlite3
 import threading
 import WebApiClient.update_time as update_time
 import models.ar721 as ar721
-from chkcard import ar721comm
-from datetime import datetime
+from chkcard import ar721comm, getSpcard_time
+from datetime import datetime, timedelta
 from time import sleep
 import serial
 import struct
@@ -37,7 +37,22 @@ def apitest():
 
 
 
-
+def white_spcardtime(spcard_auth):
+    spcard_minutes,=getSpcard_time()
+    T1=datetime.now()
+    T2=T1 + timedelta(minutes=int(spcard_minutes))
+    conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+    c=conn.cursor()
+    c.execute('DELETE FROM spcard_time')
+    c.execute("INSERT INTO spcard_time values (?,?,?,?)", (
+        '遠端操作',
+        T1,
+        T2,
+        spcard_auth
+        )
+    )
+    conn.commit()
+    conn.close()
 
 def verifyToken(receiveToken):
     allowToken = globals._server.token
@@ -146,6 +161,7 @@ def api01():
                 ts3 = threading.Thread(target=sound.remoteOpenR3Sound)
                 ts3.setDaemon(True)
                 ts3.start()
+                white_spcardtime('3')
             elif opentime==0:
                 ts4 = threading.Thread(target=sound.remoteCloseR3Sound)
                 ts4.setDaemon(True)
@@ -155,6 +171,7 @@ def api01():
                 ts5 = threading.Thread(target=sound.remoteOpenR4Sound)
                 ts5.setDaemon(True)
                 ts5.start()
+                white_spcardtime('3,4')
             elif opentime==0:
                 ts6 = threading.Thread(target=sound.remoteCloseR4Sound)
                 ts6.setDaemon(True)
