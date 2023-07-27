@@ -43,7 +43,11 @@ def white_spcardtime(spcard_auth):
     T2=T1 + timedelta(minutes=int(spcard_minutes))
     conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
     c=conn.cursor()
-    c.execute('DELETE FROM spcard_time')
+    if spcard_auth=='3,4':
+        c.execute('DELETE FROM spcard_time')
+    else:
+        c.execute('DELETE FROM spcard_time where end_time<?',(datetime.now(),))
+
     c.execute("INSERT INTO spcard_time values (?,?,?,?)", (
         '遠端操作',
         T1,
