@@ -229,7 +229,7 @@ def ar721CloseDoor(node):
         
 def openDoorWithRelays(relays,userMode):
     print('openDoor')
-    openDoorSound(userMode)
+    #openDoorSound(userMode)
     globals._relay.action(1,globals._device.opendoortime,0)
     if globals._scanner.scannerName=="AR721":
         nodesCount = globals._scanner.nodesCount
@@ -239,7 +239,7 @@ def openDoorWithRelays(relays,userMode):
             t6.setDaemon(True)
             t6.start()
             sleep(1)
-    #openDoorSound(userMode)
+    openDoorSound(userMode)
     for relay in relays:
         openRelay(int(relay))
     
@@ -274,10 +274,11 @@ def closeDoorSound(userMode):
 def openRelay(relayNo):
     print('openRelay : ',relayNo)
     globals._relay.action(relayNo,255,0)
-    if relayNo==3:
-        sound.openR3Sound()
-    elif relayNo==4:
-        sound.openR4Sound()
+    #112/9/11 mark 因影響開門時間
+    #if relayNo==3:
+    #    sound.openR3Sound()
+    #elif relayNo==4:
+    #    sound.openR4Sound()
 def closeRelay(relayNo):
     print('closeRelay : ',relayNo)
     globals._relay.action(relayNo,0,0)

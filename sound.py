@@ -77,23 +77,23 @@ def doorClose():
 
 def spcardOpenDoorSound():
     print("刷卡成功 全區卡,己開門")
-    scanSuccess()
-    spcard()
+    #scanSuccess()
+    #spcard()
     doorOpen()
 def spcardCloseDoorSound():
     print("刷卡成功 全區卡, 鐵卷門關閉中,請注意安全, 請勿任意穿越鐵卷門下方")
-    scanSuccess()
-    spcard()
+    #scanSuccess()
+    #spcard()
     doorClose()
 def openDoorSound():
     print("刷卡成功 一般卡.己開門 ")
-    scanSuccess()
-    noncard()
+    #scanSuccess()
+    #noncard()
     doorOpen()
 def closeDoorSound():
     print("刷卡成功 一般卡, 鐵卷門關閉中,請注意安全, 請勿任意穿越鐵卷門下方")
-    scanSuccess()
-    noncard()
+    #scanSuccess()
+    #noncard()
     doorClose()
 def nonAuthCard():
     print("您的卡號不在租借時間內,請確認您的租借時間或請冾區公所詢問")
