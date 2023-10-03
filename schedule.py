@@ -99,8 +99,9 @@ def chkRyStatus():
             #延後退場時段
             if chk_sp_auth()==1:
                 print("延後退場時段內, 全區卡佔用中")
-                if spcard_auth != None:
-                    spcard_Ry(spcard_auth[3],spcard_auth_ac)
+
+                #if spcard_auth != None:
+                #    spcard_Ry(spcard_auth[3],spcard_auth_ac)
             else:
                 print("延後退場時段,無全區卡佔用中,本時段無預約:延時中,先關閉R4")
                 globals._relay.action(4,0,0)
@@ -108,8 +109,8 @@ def chkRyStatus():
             #非延後退場時段
             if chk_sp_auth()==1:
                 print("非延後退場時段,全區卡佔用中")
-                if spcard_auth != None:
-                    spcard_Ry(spcard_auth[3],spcard_auth_ac)
+                #if spcard_auth != None:
+                #    spcard_Ry(spcard_auth[3],spcard_auth_ac)
             else:
                 #檢查是否在提早使用時段內, 如果是則不做改變
                 conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
