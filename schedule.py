@@ -53,10 +53,12 @@ def chkRyStatus():
         print('不可預約公用門, 不檢查Relay')
         return 0
 
-
+    #先計算bufftime and delaytime
     chkcard.initData()
     timerange = chkcard.getSetting()
     #print("_range_id:",timerange['_range_id'])
+    #print("_buffer_time:",timerange['_buffer_time'])
+    #print("_buffer_range_id:",timerange['_buffer_range_id'])
     #print("_delay_time:",timerange['_delay_time'])
     #print("_delay_range_id:",timerange['_delay_range_id'])
 
@@ -109,9 +111,29 @@ def chkRyStatus():
                 if spcard_auth != None:
                     spcard_Ry(spcard_auth[3],spcard_auth_ac)
             else:
-                print("非延後退場時段,無全區卡佔用中,本時段無預約:關閉R3及R4")
-                globals._relay.action(3,0,0)
-                globals._relay.action(4,0,0)
+                #檢查是否在提早使用時段內, 如果是則不做改變
+                conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+                c=conn.cursor()
+                c.execute(
+                    'select * '
+                    'from booking_histories '
+                    'where date=? and deviceid=? and range_id = ? '
+                    'order by aircontrol desc' ,
+                    (
+                        timerange['_today'],
+                        globals._device.dev_id,
+                        timerange['_buffer_range_id']
+                    )
+                )
+                data = c.fetchone()
+                conn.close()
+                if data != None:
+                    print("提前時段,無全區卡佔用中,本時段無預約:保持原狀態")
+                    return 0
+                else:
+                    print("非延後退場時段,無全區卡佔用中,本時段無預約:關閉R3及R4")
+                    globals._relay.action(3,0,0)
+                    globals._relay.action(4,0,0)
         return 0
     
     else:
