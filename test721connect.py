@@ -1,7 +1,7 @@
 from time import sleep
 import serial
 from datetime import datetime
-
+#
 def cardnbr(output):
 
 
