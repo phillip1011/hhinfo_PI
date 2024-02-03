@@ -19,15 +19,15 @@ class DeviceModel:
   
     
     def __init__(self):
-        cf = configparser.ConfigParser()
-        cf.read("/home/ubuntu/hhinfo_PI/config.ini")
-        self.localport = cf.get("DeviceConfig", "defaultport")
-        serverip =  cf.get("ServerConfig", "serverip")
-        forceLocalIp =  cf.get("DeviceConfig", "forceLocalIp")
-        if forceLocalIp == 'true' :
-            self.localip = cf.get("DeviceConfig", "defaultip")
-        else :
-            self.localip = self.getLocalipByServer()
+        # cf = configparser.ConfigParser()
+        # cf.read("/home/ubuntu/hhinfo_PI/config.ini")
+        # self.localport = cf.get("DeviceConfig", "defaultport")
+        # serverip =  cf.get("ServerConfig", "serverip")
+        # forceLocalIp =  cf.get("DeviceConfig", "forceLocalIp")
+        # if forceLocalIp == 'true' :
+        #     self.localip = cf.get("DeviceConfig", "defaultip")
+        # else :
+        #     self.localip = self.getLocalipByServer()
 
         conn = sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
         cur = conn.cursor()
@@ -45,10 +45,10 @@ class DeviceModel:
             self.localip = data[1].split(':',1)[0]
             self.localport = data[1].split(':',1)[1]
 
-        if self.doortype=='一般':
-            self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_normal"))
-        else:
-            self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_iron"))
+        # if self.doortype=='一般':
+        #     self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_normal"))
+        # else:
+        #     self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_iron"))
 
         #self.authorization_buffer_minutes = data[14]
         #self.authorization_delay_minutes = data[15]
@@ -62,7 +62,7 @@ class DeviceModel:
         print("name = " , self.name)
         print("family = " , self.family)
         print("mode = " , self.mode)
-        print("doortype = " , self.doortype)
+        #print("doortype = " , self.doortype)
         print("localip = " , self.localip)
         print("localport = " , self.localport)
         print("opendoortime = " , self.opendoortime)

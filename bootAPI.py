@@ -26,7 +26,7 @@ def updatedevice():
             r = response.json()
             revice_data = r['data']
             if revice_data == None:
-                print('無法從伺服器取得Device資料,localip不符')
+                print('無法從伺服器取得Device資料')
                 return 0
             conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
             c=conn.cursor()
@@ -48,7 +48,8 @@ def updatedevice():
                 revice_data["kernel"],
                 revice_data["time_buffer_start"],
                 revice_data["time_buffer_end"],
-                revice_data["spcard_time"]
+                revice_data["spcard_time"],
+                revice_data["poweredByTime"]
                 )
             )
             conn.commit()
@@ -58,21 +59,46 @@ def updatedevice():
     except:
         print("Get server/api/v1/data/device 錯誤.更新Device失敗")
 
+def updateNodes():
+    path = ''
+    request_string = "ip="+globals._device.localip +':'+str(globals._device.localport)
+    headers = {'Content-Type': 'application/json'}
+    api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) + path
+    
+    try :
+        response = requests.get(api_url_base,params=request_string, headers=headers, timeout=3) 
+        if response.status_code==200:
+            print("Get server/api/v1/data/nodes 成功")
+            r = response.json()
+            revice_data = r['data']
+            if revice_data == None:
+                print('nodes')
+                return 0
+            conn=sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+            c=conn.cursor()
+            c.execute('DELETE FROM nodes')
+            c.execute("INSERT INTO nodes values (?,?,?,?,?,?)", (
+                revice_data["nodeIP"],
+                revice_data["nodePort"],
+                revice_data["hostname"],
+                revice_data["interface"],
+                revice_data["baurate"],
+                revice_data["serialName"]
+                )
+            )
+            conn.commit()
+            conn.close()
+        else:
+            print("Get server/api/v1/data/nodes 失敗. 伺服器回傳狀態 : ",response.status_code)
+    except:
+        print("Get server/api/v1/data/nodes 錯誤.nodes")
+
+
 if __name__=='__main__':
     os.system("sudo systemctl stop hhinfo_main.service")   #先關閉主程式, 等boot.service Finish後再開始
-    # cf = configparser.ConfigParser()
-    # cf.read("/home/ubuntu/hhinfo_PI/config.ini")
-    # serverip = cf.get("ServerConfig", "serverip")
-    # VPNserverip = cf.get("ServerConfig", "VPNserverip")
-    #forceVPN = cf.get("ServerConfig", "forceVPN")
-    #os.system("amixer -c 0 set Headphone 90%")  #調整系統音量到90%
     sound.sysStartSound()
     initGlobals()
     updatedevice()
-    
-    # if forceVPN == 'true':
-    #     print('強制啟用VPN')
-    #     login_internet.main(False)
-
+    updateNodes()
     os.system("sudo systemctl start hhinfo_main.service")
     

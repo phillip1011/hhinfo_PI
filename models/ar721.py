@@ -42,15 +42,17 @@ def do_read_ar721():
                 node = x+1
                 write_command_to_node(node, '0x25')
                 output = ser.read(64)
+                print("資料長度=",output[1])
             except:
                 print(globals._scanner.sname + ' AR721 node:' + str(node) + ' read error')
                 sleep(3)
-            if len(output)==31:
+            if len(output)==31 or len(output)==35:
                 today=str(datetime.now().strftime('%Y-%m-%d'))
                 ScanDate = "20" + str(output[11]).zfill(2) + "-" + str(output[10]).zfill(2) + "-" + str(output[9]).zfill(2)
                 ScanTime = str(output[7]).zfill(2) + ":" + str(output[6]).zfill(2) + ":" + str(output[5]).zfill(2)
                 if today==ScanDate:
-                    if output[3]==0x3 and output[1]==0x1d:
+                    #if output[3]==0x3 and output[1]==0x1d:   #資料長度應為29或33
+                    if output[3]==0x3:
                         UID =  bytearray(b'\x00\x00\x00\x00')
                         UID[0] = output[19]
                         UID[1] = output[20]

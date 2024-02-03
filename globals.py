@@ -53,13 +53,13 @@ def initDatabase():
     c.execute('CREATE TABLE IF NOT EXISTS booking_histories (id TEXT,deviceid TEXT,date TEXT,range_id TEXT,aircontrol TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS scanlog (cardnbr TEXT,date TEXT,time TEXT,rtnflag TEXT,auth TEXT,process TEXT,result TEXT)') 
     c.execute('CREATE TABLE IF NOT EXISTS spcard_time (cardnbr TEXT,start_time TEXT,end_time TEXT,authority TEXT)')  
+    c.execute('CREATE TABLE IF NOT EXISTS nodes (nodeIP TEXT,nodePort TEXT,hostname TEXT,protocol TEXT,baurate TEXT,serialName TEXT)') 
     conn.close()
 
 
 def initServer():
     global _server
     _server = ServerModel()
-  
 
 def initScanner():
     global _scanner

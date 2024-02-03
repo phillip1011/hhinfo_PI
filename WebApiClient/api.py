@@ -399,7 +399,7 @@ def apiDeviceDate():
         'name TEXT,'
         'description TEXT,'
         'group_id TEXT,'
-        'mode TEXT,'
+        'mode TEXT,'   
         'style TEXT,'
         'type TEXT,'
         'is_booking TEXT,'
@@ -407,11 +407,12 @@ def apiDeviceDate():
         'kernel TEXT,'
         'buff_minutes INTEGER ,'
         'delay_minutes INTEGER,'
-        'spcard_minutes INTEGER)'
+        'spcard_minutes INTEGER,'
+        'poweredByTime TEXT)'
     )
     c.execute('DELETE FROM device')
     value = revice_data
-    c.execute('INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(
+    c.execute('INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(
         value["id"],
         value["ip"],
         value["local_ip"],
@@ -428,7 +429,8 @@ def apiDeviceDate():
         value["kernel"],
         value["time_buffer_start"],
         value["time_buffer_end"],
-        value["spcard_time"],   
+        value["spcard_time"],  
+        value["poweredByTime"]   
         )
     )
     conn.commit()
