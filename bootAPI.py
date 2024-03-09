@@ -18,7 +18,7 @@ def updatedevice():
     request_string = "ip="+globals._device.localip +':'+str(globals._device.localport)
     headers = {'Content-Type': 'application/json'}
     api_url_base = "http://" + globals._server.serverip + ":" + str(globals._server.serverport) + path
-    
+    #sample URL= http://35.221.198.141:80/api/v1/data/device
     try :
         response = requests.get(api_url_base,params=request_string, headers=headers, timeout=3) 
         if response.status_code==200:
@@ -98,7 +98,7 @@ if __name__=='__main__':
     os.system("sudo systemctl stop hhinfo_main.service")   #先關閉主程式, 等boot.service Finish後再開始
     sound.sysStartSound()
     initGlobals()
-    updatedevice()
-    updateNodes()
-    os.system("sudo systemctl start hhinfo_main.service")
+    #updatedevice()
+    #updateNodes()
+    #os.system("sudo systemctl start hhinfo_main.service")
     

@@ -9,6 +9,7 @@ import WebApiClient.updatetime as updatetime
 import upload    
 import models.r35c as r35c
 import models.ar721 as ar721
+import models.AR837TCP as ar837
 import globals 
 import sound as sound
 
@@ -36,6 +37,12 @@ if __name__=='__main__':
         print('Start thread AR721')
         sound.ar721ConnectSound()
         t = threading.Thread(target=ar721.do_read_ar721)
+        t.setDaemon(True)
+        t.start()
+    elif globals._scanner.scannerName =='AR837' :
+        print('Start thread AR837')
+        #sound.r35cConnectSound()
+        t = threading.Thread(target=ar837.do_read_ar837)
         t.setDaemon(True)
         t.start()
     elif globals._scanner.scannerName =='R35C' :

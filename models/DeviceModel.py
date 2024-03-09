@@ -19,15 +19,15 @@ class DeviceModel:
   
     
     def __init__(self):
-        # cf = configparser.ConfigParser()
-        # cf.read("/home/ubuntu/hhinfo_PI/config.ini")
-        # self.localport = cf.get("DeviceConfig", "defaultport")
-        # serverip =  cf.get("ServerConfig", "serverip")
-        # forceLocalIp =  cf.get("DeviceConfig", "forceLocalIp")
-        # if forceLocalIp == 'true' :
-        #     self.localip = cf.get("DeviceConfig", "defaultip")
-        # else :
-        #     self.localip = self.getLocalipByServer()
+        cf = configparser.ConfigParser()
+        cf.read("/home/ubuntu/hhinfo_PI/config.ini")
+        self.localport = cf.get("DeviceConfig", "defaultport")
+        serverip =  cf.get("ServerConfig", "serverip")
+        forceLocalIp =  cf.get("DeviceConfig", "forceLocalIp")
+        if forceLocalIp == 'true' :
+            self.localip = cf.get("DeviceConfig", "defaultip")
+        else :
+            self.localip = self.getLocalipByServer()
 
         conn = sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
         cur = conn.cursor()
@@ -45,14 +45,14 @@ class DeviceModel:
             self.localip = data[1].split(':',1)[0]
             self.localport = data[1].split(':',1)[1]
 
-        # if self.doortype=='一般':
-        #     self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_normal"))
-        # else:
-        #     self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_iron"))
+        if self.doortype=='一般':
+            self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_normal"))
+        else:
+            self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_iron"))
 
         #self.authorization_buffer_minutes = data[14]
         #self.authorization_delay_minutes = data[15]
-        self.devicetime = subprocess.getoutput("date")
+        self.devicetime = subprocess.getoutput("date") #取得系統時間, 參數 = 終端機直接輸入的命令
 
         self.show()
 

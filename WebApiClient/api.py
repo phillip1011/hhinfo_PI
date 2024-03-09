@@ -408,7 +408,7 @@ def apiDeviceDate():
         'buff_minutes INTEGER ,'
         'delay_minutes INTEGER,'
         'spcard_minutes INTEGER,'
-        'poweredByTime TEXT)'
+        'powered_by_time TEXT)'
     )
     c.execute('DELETE FROM device')
     value = revice_data
@@ -430,7 +430,7 @@ def apiDeviceDate():
         value["time_buffer_start"],
         value["time_buffer_end"],
         value["spcard_time"],  
-        value["poweredByTime"]   
+        value["powered_by_time"]
         )
     )
     conn.commit()

@@ -45,7 +45,8 @@ def initDatabase():
               'kernel TEXT,'
               'buffer_minutes TEXT,'
               'delay_minutes TEXT,'
-              'spcard_minutes TEXT)'
+              'spcard_minutes TEXT,'
+              'powered_by_time TEXT)'
             )
     c.execute('CREATE TABLE IF NOT EXISTS spcards (id TEXT,customer_id TEXT,authority TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS cards (id TEXT,customer_id TEXT,card_uuid TEXT)')

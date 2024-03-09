@@ -5,6 +5,7 @@ import serial
 import globals 
 import threading
 import sound as sound
+import socket
 buffer_minutes =''
 delay_minutes =''
 spcard_minutes =''
@@ -226,7 +227,33 @@ def ar721CloseDoor(node):
         ser.write(AR721_R2_OFF)
     except:
         print("ar721CloseDoor Error")
-        
+
+def ar837OpenDoor(node):
+    try:
+        AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
+        AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((globals._scanner.IP, globals._scanner.port))
+        s.send(AR721_R1_ON)        
+        sleep(globals._device.opendoortime)
+        s.send(AR721_R1_OFF)
+        s.close
+    except:
+        print("ar837OpenDoor Error")
+
+def ar837CloseDoor(node):
+    try:
+        AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
+        AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((globals._scanner.IP, globals._scanner.port))
+        s.send(AR721_R2_ON)        
+        sleep(globals._device.opendoortime)
+        s.send(AR721_R2_OFF)
+        s.close
+    except:
+        print("ar721CloseDoor Error")
+
 def openDoorWithRelays(relays,userMode):
     print('openDoor')
     #openDoorSound(userMode)
@@ -239,6 +266,15 @@ def openDoorWithRelays(relays,userMode):
             t6.setDaemon(True)
             t6.start()
             sleep(1)
+    elif globals._scanner.scannerName=="AR837":
+        nodesCount = globals._scanner.nodesCount
+        for x in range(nodesCount):
+            node = x+1
+            t6 = threading.Thread(target=ar837OpenDoor, args=(node,))
+            t6.setDaemon(True)
+            t6.start()
+            sleep(1)
+
     openDoorSound(userMode)
     for relay in relays:
         openRelay(int(relay))
@@ -399,8 +435,8 @@ def chkcard(uid):
 #if __name__=='__main__':
 
 
-    # uid='4077189990'
+    #uid='4077189990'
     # uid='1479304897'
-    # # uid='1111000125'
-    # chkcard(uid)
+    # uid='1111000125'
+    #chkcard(uid)
 
