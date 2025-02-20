@@ -2,7 +2,7 @@ import sqlite3
 from time import sleep
 from datetime import datetime, timedelta
 import serial
-import globals 
+import globals
 import threading
 import sound as sound
 import socket
@@ -18,7 +18,10 @@ def initData():
     global _buffer_time
     global _delay_range_id
     global _delay_time
-
+    global chknode
+    global chkhost 
+    global chkport
+    
     _today=str(datetime.now().strftime('%Y-%m-%d'))
     _time=str(datetime.now().strftime('%H:%M:%S'))
     _range_id = criteriaRangeId(_time)
@@ -71,6 +74,8 @@ def getSpcard_time():
     c.execute('select spcard_minutes from device') 
     spcard_time = c.fetchone()
     conn.close()
+    if spcard_time == None:
+        spcard_time = "30"
     return spcard_time
 
 def getBuffer_time():
@@ -79,6 +84,8 @@ def getBuffer_time():
     c.execute('select buffer_minutes from device') 
     buffer_time = c.fetchone()
     conn.close()
+    if buffer_time == None:
+        buffer_time = "0"
     return buffer_time
 
 def getDelay_time():
@@ -87,6 +94,8 @@ def getDelay_time():
     c.execute('select delay_minutes from device') 
     delay_time = c.fetchone()
     conn.close()
+    if delay_time == None:
+        delay_time = "0"
     return delay_time
 
 def getCardByUid(uid):
@@ -184,9 +193,9 @@ def getOverTimeBookingDataByCustomerId(customer_id):
     return overTimeBookingData
 
 
-def actionDoor(uid,userMode,relays):
+def actionDoor(uid,userMode,relays,node,host,port):
     if globals._device.doortype != '鐵捲門' :
-        openDoorWithRelays(relays,userMode)
+        openDoorWithRelays(relays,userMode,node,host,port)
         log(uid,'合法卡',userMode+'-開門',1)
     else : 
         sxstatus = globals._relay.readSensors()
@@ -196,12 +205,12 @@ def actionDoor(uid,userMode,relays):
         print('s1 status =',s1)
         if s1==1:
             # 開門
-            openDoorWithRelays(relays,userMode)
+            openDoorWithRelays(relays,userMode,node,host,port)
             log(uid,'合法卡',userMode+'-鐵卷門開門',1)
             return 1
         else:
             # 關門
-            closeDoorWithRelays(relays,userMode)
+            closeDoorWithRelays(relays,userMode,node,host,port)
             log(uid,'合法卡',userMode+'-鐵卷門關門',1)
             return 0
 
@@ -214,8 +223,11 @@ def ar721OpenDoor(node):
         ser.write(AR721_R1_ON)
         sleep(globals._device.opendoortime)
         ser.write(AR721_R1_OFF)
+        sleep(1)
+        ser.write(AR721_R1_OFF)
+        print("ar721OpenDoor node:",node," success")
     except:
-        print("ar721OpenDoor Error")
+        print("ar721OpenDoor node:",node,"Error")
 
 def ar721CloseDoor(node):
     try:
@@ -225,72 +237,85 @@ def ar721CloseDoor(node):
         ser.write(AR721_R2_ON)
         sleep(globals._device.opendoortime)
         ser.write(AR721_R2_OFF)
+        sleep(1)
+        ser.write(AR721_R2_OFF)
+        print("ar721CloseDoor node:",node," success")
     except:
-        print("ar721CloseDoor Error")
+        print("ar721CloseDoor node:",node,"Error")
 
-def ar837OpenDoor(node):
+def ar837OpenDoor(node,host,port):
     try:
         AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
         AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((globals._scanner.IP, globals._scanner.port))
-        s.send(AR721_R1_ON)        
+        s.connect((host, port))
+        s.send(AR721_R1_ON)     
         sleep(globals._device.opendoortime)
+        s.send(AR721_R1_OFF)
+        sleep(1)
         s.send(AR721_R1_OFF)
         s.close
     except:
-        print("ar837OpenDoor Error")
+        print("AR837OpenDoor Error")
 
-def ar837CloseDoor(node):
+def ar837CloseDoor(node,host,port):
     try:
         AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
         AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((globals._scanner.IP, globals._scanner.port))
+        s.connect((host, port))
         s.send(AR721_R2_ON)        
         sleep(globals._device.opendoortime)
         s.send(AR721_R2_OFF)
+        sleep(1)
+        s.send(AR721_R2_OFF)
         s.close
     except:
-        print("ar721CloseDoor Error")
+        print("AR837CloseDoor Error")
 
-def openDoorWithRelays(relays,userMode):
+def openDoorWithRelays(relays,userMode,node,host,port):
     print('openDoor')
     #openDoorSound(userMode)
     globals._relay.action(1,globals._device.opendoortime,0)
     if globals._scanner.scannerName=="AR721":
-        nodesCount = globals._scanner.nodesCount
-        for x in range(nodesCount):
-            node = x+1
-            t6 = threading.Thread(target=ar721OpenDoor, args=(node,))
-            t6.setDaemon(True)
-            t6.start()
-            sleep(1)
+        #nodesCount = globals._scanner.nodesCount
+        # for x in range(nodesCount):
+        #     node = x+1
+        t6 = threading.Thread(target=ar721OpenDoor, args=(node,))
+        t6.setDaemon(True)
+        t6.start()
+        sleep(1)
     elif globals._scanner.scannerName=="AR837":
-        nodesCount = globals._scanner.nodesCount
-        for x in range(nodesCount):
-            node = x+1
-            t6 = threading.Thread(target=ar837OpenDoor, args=(node,))
-            t6.setDaemon(True)
-            t6.start()
-            sleep(1)
+        # nodesCount = globals._scanner.nodesCount
+        # for x in range(nodesCount):
+            # node = x+1
+        
+        t6 = threading.Thread(target=ar837OpenDoor, args=(node,host,port,))
+        t6.setDaemon(True)
+        t6.start()
+        sleep(1)
 
     openDoorSound(userMode)
     for relay in relays:
         openRelay(int(relay))
     
 
-def closeDoorWithRelays(relays,userMode):
+def closeDoorWithRelays(relays,userMode,node,host,port):
     print('closeDoor')
     globals._relay.action(2,globals._device.opendoortime,0)
     if globals._scanner.scannerName=="AR721":
-        nodesCount = globals._scanner.nodesCount
-        for x in range(nodesCount):
-            node = x+1
+        # nodesCount = globals._scanner.nodesCount
+        # for x in range(nodesCount):
+        #     node = x+1
             t7 = threading.Thread(target=ar721CloseDoor, args=(node,))
             t7.setDaemon(True)
             t7.start()
             sleep(1)
+    elif globals._scanner.scannerName=="AR837":
+        t6 = threading.Thread(target=ar837CloseDoor, args=(node,host,port,))
+        t6.setDaemon(True)
+        t6.start()
+        sleep(1)
     closeDoorSound(userMode)
     # for relay in relays:
     #     closeRelay(int(relay))
@@ -330,7 +355,7 @@ def log(uid,auth,process,result):
     conn.close()
 
 
-def chkcard(uid):
+def chkcard(uid,node,host,port):
     print("____________chkcard_run__________________")
     initData()
     #取得Card資料
@@ -340,9 +365,11 @@ def chkcard(uid):
         log(uid,'非法卡','禁止進入',0)
         sound.nonRegisterCard()
         return 0
-    
+    print(globals._device.doortype)
     #取得Spcard資料
     spcard = getSpcardByCustomerId(card[1])
+
+    print(buffer_minutes)
 
     if spcard == None :
         print('找不到Spcard資料 => 找尋預約紀錄')
@@ -355,7 +382,7 @@ def chkcard(uid):
                 if bufferBookingData !=None:
                     authority_relay = [3]
                     print("緩衝提前時段,開啟R3")
-                    actionDoorReturn = actionDoor(uid,'緩衝提前時段',authority_relay)
+                    actionDoorReturn = actionDoor(uid,'緩衝提前時段',authority_relay,node,host,port)
                     return 0
 
             if delay_minutes !=0:
@@ -364,7 +391,7 @@ def chkcard(uid):
                 if delayBookingData !=None:
                     authority_relay = [3]
                     print("緩衝延後時段,開啟R3")
-                    actionDoorReturn = actionDoor(uid,'緩衝延後時段',authority_relay)
+                    actionDoorReturn = actionDoor(uid,'緩衝延後時段',authority_relay,node,host,port)
                     return 0
             
             if globals._device.doortype=='鐵捲門' :
@@ -381,7 +408,7 @@ def chkcard(uid):
                     s1=sxstatus[0]
                     if s1==0:
                         print('找到超時預約紀錄 => 關門')
-                        closeDoorWithRelays([3,4],'一般卡')
+                        closeDoorWithRelays([3,4],'一般卡',node,host,port)
                         log(uid,'合法卡','超時關門',1)
                     else:
                         sound.nonAuthCard()    
@@ -399,7 +426,7 @@ def chkcard(uid):
                 aircontrol = nowBookingData[4]
                 if aircontrol == '1':
                     authority_relay.append(4)
-            actionDoorReturn = actionDoor(uid,'租借時段',authority_relay)
+            actionDoorReturn = actionDoor(uid,'租借時段',authority_relay,node,host,port)
      
             
           
@@ -428,7 +455,7 @@ def chkcard(uid):
         else:
             authority_split = authority.split(',')
         #print('authority_split : ',authority_split)
-        actionDoorReturn = actionDoor(uid,'全區卡',authority_split)
+        actionDoorReturn = actionDoor(uid,'全區卡',authority_split,node,host,port)
 
 
 

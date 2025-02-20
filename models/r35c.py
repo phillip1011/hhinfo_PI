@@ -12,7 +12,7 @@ def callback(uid):
     print('-----getcallback-------'+str(uid))
     if uid != '' :
         uid =str(uid).zfill(10)
-        chkcard.chkcard(uid)
+        chkcard.chkcard(uid,"0","0","0")
     else:
         print("read nfc error")
 

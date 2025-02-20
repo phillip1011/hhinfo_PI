@@ -36,12 +36,12 @@ class DeviceModel:
         conn.close()
         if data != None:
             self.dev_id = data[0]
-            self.name = data[5]
-            self.family = data[4]
-            self.mode = data[8]
-            self.style = data[9]
-            self.doortype = data[10]
-            self.is_booking = data[11]
+            self.name = data[6]
+            self.family = data[5]
+            self.mode = data[9]
+            self.style = data[10]
+            self.doortype = data[11]
+            self.is_booking = data[12]
             self.localip = data[1].split(':',1)[0]
             self.localport = data[1].split(':',1)[1]
 
@@ -49,7 +49,7 @@ class DeviceModel:
             self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_normal"))
         else:
             self.opendoortime =(int)(cf.get("DeviceConfig", "opendoortime_iron"))
-
+        print(self.opendoortime)
         #self.authorization_buffer_minutes = data[14]
         #self.authorization_delay_minutes = data[15]
         self.devicetime = subprocess.getoutput("date") #取得系統時間, 參數 = 終端機直接輸入的命令
@@ -62,12 +62,12 @@ class DeviceModel:
         print("name = " , self.name)
         print("family = " , self.family)
         print("mode = " , self.mode)
-        #print("doortype = " , self.doortype)
+        print("doortype = " , self.doortype)
         print("localip = " , self.localip)
         print("localport = " , self.localport)
         print("opendoortime = " , self.opendoortime)
         print("devicetime = " , self.devicetime)
-       #print("buff_minutes = ", self.authorization_buffer_minutes)
+        #print("buff_minutes = ", self.authorization_buffer_minutes)
         #print("delay_minutes = ", self.authorization_delay_minutes)
 
     def getLocalipByServer(self):

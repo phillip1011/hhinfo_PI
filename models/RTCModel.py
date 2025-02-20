@@ -1,4 +1,5 @@
 import json
+import socket
 import subprocess
 import serial
 import requests
@@ -6,7 +7,9 @@ import sound as sound
 from datetime import datetime
 from time import sleep
 import configparser
+import sqlite3
 import globals
+
 
 class RTCModel:
     RTCDev=''
@@ -24,7 +27,9 @@ class RTCModel:
         self.baurate = cf.get("ScannerConfig", "baurate")
 
         if self.updateLocalTime()==200:
-            if globals._scanner.scannerName=="AR721":
+            if globals._scanner.scannerName=="AR837":
+                self.update837time()
+            elif globals._scanner.scannerName=="AR721":
                 self.update721time()
             if self.updateRTC()==1:
                 self.RTCDev="連接RTC成功"
@@ -34,12 +39,20 @@ class RTCModel:
             sound.sysTimeUpdateFinish()
         else:
             if self.findRTC()==1: #有RTC,將RTC寫到721
-                if globals._scanner.scannerName=="AR721":
+                if globals._scanner.scannerName=="AR837":
+                    self.update837time()
+                    sound.sysTimeUpdateFinish()
+                elif globals._scanner.scannerName=="AR721":
                     self.update721time()
                     sound.sysTimeUpdateFinish()
                     self.timeUpdate='Sucess'
             else: #無RTC,用721回寫到系統
-                if globals._scanner.scannerName=="AR721":
+                if globals._scanner.scannerName=="AR837":
+                    time_tuple=self.read_837time('0x24')
+                    self.localSetTime(time_tuple)
+                    self.timeUpdate='Sucess'
+                    sound.sysTimeUpdateFinish()
+                elif globals._scanner.scannerName=="AR721":
                     time_tuple=self.read_721time('0x24')
                     self.localSetTime(time_tuple)
                     self.timeUpdate='Sucess'
@@ -53,7 +66,7 @@ class RTCModel:
     def show(self):
         print("__________RTCModel show__________")
         print("RTC Device = " , self.RTCDev)
-        print("AR721時間更新 = " , self.Ar721update)
+        print("刷卡機時間更新 = " , self.Ar721update)
         print("檢查時間更新 = " , self.timeUpdate)
 
     def updateLocalTime(self):
@@ -84,6 +97,88 @@ class RTCModel:
         except:
             print("Get server/api/v1/data/time 錯誤.更新時間失敗")
         #     return
+
+    def update837time(self):
+        conn = sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+        cur = conn.cursor()
+        cur.execute('select * from node')
+        nodedata = cur.fetchall()
+        conn.close()
+        condition = True
+        nodecounting = 0
+        while condition == True:
+            try:
+                host = nodedata[nodecounting][7]
+                port = int(nodedata[nodecounting][8])
+                hostname = nodedata[nodecounting][4]
+                node = int(nodedata[nodecounting][2])
+                if int(nodedata[nodecounting][14])==1:
+                    try:
+                        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        s.connect((host,port))
+                        sysyy=int(datetime.now().strftime('%y'))
+                        sysmm=int(datetime.now().strftime('%m'))
+                        sysdd=int(datetime.now().strftime('%d'))
+                        syshh=int(datetime.now().strftime('%H'))
+                        sysmin=int(datetime.now().strftime('%M'))
+                        sysss=int(datetime.now().strftime('%S'))
+                        sysww=int(datetime.now().strftime('%w'))
+                        if sysww==0:
+                            sysww=7
+                        #print("PI系統時間=",sysyy,'-',sysmm,'-',sysdd,' ',syshh,':',sysmin,':',sysss)
+                        xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy
+                        
+                        sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
+                        sum =sum % 256
+                        input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
+                        s.send(input)
+                        sleep(0.2)
+                        print(hostname,"IP:",host,"node=",node, "校時完成")
+                    except:
+                        print(hostname,"IP:",host,"node=",node, "校時失敗")
+                    nodecounting = nodecounting + 1  
+                else:
+                    print(hostname,"IP:",host,"node=",node, "未啟用")
+                    nodecounting = nodecounting + 1  
+            except:
+                condition = False
+            self.Ar721update="Success"
+            
+
+    def read_837time(self):
+        func = "0x24"
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((host,port))
+        xor=255^node^int(func,16)
+        sum=node+int(func,16)+xor
+        sum =sum % 256
+        comm=b'\x7e\x04'+ bytes([node])+ bytes([int(func,16)]) + bytes([xor])+ bytes([sum])
+        s.send(comm)
+        sleep(0.2)
+        output = s.recv(64)
+
+        if len(output)==0:
+            print("無回傳資料")
+        else:
+            rtn=''
+            for i in range(len(output)):
+                rtn=rtn+' '+str(hex(output[i]))
+                
+            if output[3]==0x3:
+                ScanDate = "20" + str(output[11]).zfill(2) + "-" + str(output[10]).zfill(2) + "-" + str(output[9]).zfill(2)
+                ScanTime = str(output[7]).zfill(2) + ":" + str(output[6]).zfill(2) + ":" + str(output[5]).zfill(2)
+                print('日期=',ScanDate,'時間=',ScanTime)
+
+                time_tuple = ( int("20" + str(output[11]).zfill(2)), # Year
+                                output[10], # Month
+                                output[9], # Day
+                                output[7], # Hour
+                                output[6], # Minute
+                                output[5], # Second
+                                0, # Millisecond
+                            )
+                return time_tuple
+
 
     def update721time(self):
             nodesCount = self.nodesCount

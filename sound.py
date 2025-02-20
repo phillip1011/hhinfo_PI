@@ -134,7 +134,7 @@ def remoteCloseR3Sound():
     remote()
     closeR3Sound()
 def remoteOpenR4Sound():
-    print("遠端操作 己開啟冷氣電源,請開啟電燈開關")
+    print("遠端操作 己開啟冷氣電源,請開啟冷氣開關")
     remote()
     openR4Sound()
 def remoteCloseR4Sound():

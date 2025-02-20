@@ -1,5 +1,5 @@
 import flask
-
+import sqlite3
 from flask import jsonify, request
 import base64
 import json
@@ -8,6 +8,8 @@ import sqlite3
 import threading
 import WebApiClient.update_time as update_time
 import models.ar721 as ar721
+import models.AR837TCP as ar837
+import socket
 from chkcard import ar721comm, getSpcard_time
 from datetime import datetime, timedelta
 from time import sleep
@@ -15,6 +17,11 @@ import serial
 import struct
 import globals
 import sound as sound
+conn = sqlite3.connect("/home/ubuntu/hhinfo_PI/cardno.db")
+cur = conn.cursor()
+cur.execute('select * from node')
+nodedata = cur.fetchall()
+conn.close()    
 
 print("____________api.py run______________________")
 app = flask.Flask(__name__)
@@ -86,8 +93,11 @@ def ar721OpenDoor(node,opentime,waittime):
         ser.write(AR721_R1_ON)
         sleep(opentime)
         ser.write(AR721_R1_OFF)
+        sleep(1)
+        ser.write(AR721_R1_OFF)
+        print("remote ar721OpenDoor node:",node," success")
     except:
-        print("remote ar721OpenDoor Error")
+        print("remote ar721OpenDoor node:",node," Error")
 
 def ar721CloseDoor(node,opentime,waittime):
     AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
@@ -99,8 +109,12 @@ def ar721CloseDoor(node,opentime,waittime):
         ser.write(AR721_R2_ON)
         sleep(opentime)
         ser.write(AR721_R2_OFF)
+        sleep(1)
+        ser.write(AR721_R2_OFF)       
+        print("remote ar721CloseDoor node:",node,"success")
+
     except:
-        print("remote ar721CloseDoor Error")
+        print("remote ar721CloseDoor node:",node," Error")
 
 def ar721action(gateno,dooropentime,waittime):
     nodesCount = globals._scanner.nodesCount
@@ -114,8 +128,70 @@ def ar721action(gateno,dooropentime,waittime):
         t.start()
         sleep(1)
 
+def ar837action(gateno,dooropentime,waittime):  
+    
+    condition = True
+    datano = 0
+    while condition == True:        
+        try:
+            host = nodedata[datano][7]
+            port = int(nodedata[datano][8])
+            hostname = nodedata[datano][4]
+            node = int(nodedata[datano][2])
+            datano = datano + 1
+            if(gateno ==1):
+                t = threading.Thread(target=ar837OpenDoor, args=(node, host, port,hostname, dooropentime, waittime))
+            else:
+                t = threading.Thread(target=ar837CloseDoor, args=(node, host, port,hostname, dooropentime, waittime))
+            t.setDaemon(True)
+            t.start()
+            sleep(1)
+        except:
+            condition = False
+
+def ar837OpenDoor(node, host, port,hostname, opentime, waittime):
+
+    AR721_R1_ON=ar721comm(node,'0x21','0x82')   #door relay on
+    AR721_R1_OFF=ar721comm(node,'0x21','0x83')  #door relay off
+    
+    if waittime!=0:
+        time.sleep(waittime)
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((host, port))
+        s.send(AR721_R1_ON)        
+        sleep(opentime)
+        s.send(AR721_R1_OFF)        
+        sleep(1)
+        s.send(AR721_R1_OFF)
+        s.close
+        print("AR837:",hostname,"OpenDoor success")
+    except:
+        print("AR837:",hostname,"OpenDoor Error")
+
+def ar837CloseDoor(node, host, port,hostname, opentime, waittime):
+    AR721_R2_ON=ar721comm(node,'0x21','0x85')   #alarm relay on
+    AR721_R2_OFF=ar721comm(node,'0x21','0x86')  #alarm relay off
+    if waittime!=0:
+        time.sleep(waittime)
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((host, port))
+        s.send(AR721_R2_ON)        
+        sleep(opentime)
+        s.send(AR721_R2_OFF)
+        sleep(1)
+        s.send(AR721_R2_OFF)
+        s.close
+        print("AR837:",hostname,"CloseDoor success")
+    except:
+        print("AR837:",hostname,"CloseDoor Error")
+
+
+
 @app.route('/api/v3/remote/control', methods=['POST'])
 def api01():
+    
     try:
         token = request.headers.get('token')
 
@@ -127,7 +203,6 @@ def api01():
         status_code = flask.Response(status=401)
         return status_code
         
-    
     try:
         revice_data = json.loads(request.data)
         if  verifyServerIp(revice_data["serverip"]) != True:
@@ -135,12 +210,16 @@ def api01():
             return status_code
         for value in revice_data["relay"]:
             gateno = revice_data["relay"][value]["gateno"]
+            print("開啟腳位",gateno)
             opentime = revice_data["relay"][value]["opentime"]
-            waittime = revice_data["relay"][value]["waittime"]
+            waittime = revice_data["relay"][value]["waittime"] 
             if isinstance(gateno,int) and isinstance(opentime,int) and isinstance(waittime,int):
                 globals._relay.action(gateno,opentime,waittime)
-                if (gateno == 1 or gateno ==2) and globals._scanner.scannerName == 'AR721':
+                if (gateno == 1 or gateno ==2) and globals._scanner.scannerName[0:5] == "AR721":
                     ar721action(gateno,opentime,waittime)
+                elif(gateno == 1 or gateno ==2) and globals._scanner.scannerName[0:5] == "AR837":
+                    ar837action(gateno,opentime,waittime)
+                   
         sleep(0.1)
         rt = {
             "controlip": globals._device.localip,
@@ -264,6 +343,44 @@ def api02():
         update_time.update()
         #update_time.update2(revice_data)
         status_code = flask.Response(status=203)
+        if globals._scanner.scannerName=="AR837":
+            condition = True
+            nodecounting = 0
+            while condition == True:
+                x = nodecounting
+                nodecounting = nodecounting + 1
+                try:
+                    if int(nodedata[x][14])==1:
+                        host = nodedata[x][7]
+                        port = int(nodedata[x][8])
+                        hostname = nodedata[x][4]
+                        node = int(nodedata[x][2])
+                        
+                        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        s.connect((host,port))
+                        sysyy=int(datetime.now().strftime('%y'))
+                        sysmm=int(datetime.now().strftime('%m'))
+                        sysdd=int(datetime.now().strftime('%d'))
+                        syshh=int(datetime.now().strftime('%H'))
+                        sysmin=int(datetime.now().strftime('%M'))
+                        sysss=int(datetime.now().strftime('%S'))
+                        sysww=int(datetime.now().strftime('%w'))
+                        if sysww==0:
+                            sysww=7
+                        #print("PI系統時間=",sysyy,'-',sysmm,'-',sysdd,' ',syshh,':',sysmin,':',sysss)
+                        xor=255^node^35^sysss^sysmin^syshh^sysww^sysdd^sysmm^sysyy                    
+                        sum=(node+35+sysss+sysmin+syshh+sysww+sysdd+sysmm+sysyy+xor)
+                        sum =sum % 256
+                        input=b'\x7e\x0B'+ bytes([node])+ b'\x23' + bytes([sysss]) + bytes([sysmin])+ bytes([syshh])+ bytes([sysww])+ bytes([sysdd])+ bytes([sysmm])+ bytes([sysyy])+ bytes([xor])+ bytes([sum])
+                        s.send(input)
+                        sleep(0.2)
+                        print(hostname,"IP:",host,"node=",node, "校時完成")     
+                
+                except:
+                    print(hostname,"IP:",host,"node=",node, "校時失敗")
+                condition = False
+        
+                    
         if globals._scanner.scannerName=="AR721":
             nodesCount = globals._scanner.nodesCount
             for x in range(nodesCount):
@@ -291,7 +408,7 @@ def api02():
                     print("ar721 update time Error")
                 sleep(0.2)
                 print(globals._scanner.scannerName,"node=",node, "校時完成")
-
+        print (status_code)
         return status_code
 
    
@@ -393,6 +510,7 @@ def apiDeviceDate():
         'CREATE TABLE IF NOT EXISTS device('
         'id TEXT,'
         'ip TEXT,'
+        'mac TEXT,'
         'local_ip TEXT,'
         'ip_mode TEXT,'
         'family TEXT,'
@@ -405,16 +523,18 @@ def apiDeviceDate():
         'is_booking TEXT,'
         'status TEXT,'
         'kernel TEXT,'
-        'buff_minutes INTEGER ,'
+        'buffer_minutes INTEGER ,'
         'delay_minutes INTEGER,'
         'spcard_minutes INTEGER,'
+        'node_protocol TEXT,'
         'powered_by_time TEXT)'
     )
     c.execute('DELETE FROM device')
     value = revice_data
-    c.execute('INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(
+    c.execute('INSERT INTO device values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(
         value["id"],
         value["ip"],
+        value["mac"],
         value["local_ip"],
         value["ip_mode"],
         value["family"],
@@ -430,7 +550,8 @@ def apiDeviceDate():
         value["time_buffer_start"],
         value["time_buffer_end"],
         value["spcard_time"],  
-        value["powered_by_time"]
+        value["node_protocol"],  
+        value["powered_by_time"]   
         )
     )
     conn.commit()
